@@ -426,6 +426,9 @@ namespace FlightAdvisor.ViewModels
             {
                 client.DefaultRequestHeaders.Add("User-Agent", "FlightAdvisor/1.0");
                 var response = await client.GetStringAsync(url);
+
+                System.Diagnostics.Debug.WriteLine($"Runway API Response: {response}");
+
                 var airportArray = JsonDocument.Parse(response);
 
                 if (airportArray.RootElement.GetArrayLength() > 0)
@@ -436,31 +439,51 @@ namespace FlightAdvisor.ViewModels
                     {
                         foreach (var runway in runwaysElement.EnumerateArray())
                         {
-                            if (runway.TryGetProperty("id", out var idElement) &&
-                                runway.TryGetProperty("alignment", out var alignmentElement))
-                            {
-                                var id = idElement.GetString();
-                                var alignmentStr = alignmentElement.GetString();
+                            string id = null;
+                            double heading = 0;
 
-                                if (!string.IsNullOrWhiteSpace(id) &&
-                                    !string.IsNullOrWhiteSpace(alignmentStr) &&
-                                    alignmentStr != "-" &&
-                                    double.TryParse(alignmentStr, out double heading))
+                            // Try to get the runway ID
+                            if (runway.TryGetProperty("id", out var idElement))
+                            {
+                                id = idElement.GetString();
+                            }
+
+                            // Try to get the alignment/heading
+                            if (runway.TryGetProperty("alignment", out var alignmentElement))
+                            {
+                                if (alignmentElement.ValueKind == JsonValueKind.Number)
                                 {
-                                    runwayList.Add(new RunwayData
-                                    {
-                                        Designator = id,
-                                        TrueHeading = heading,
-                                        DisplayName = $"{id} ({heading:F0}°)"
-                                    });
+                                    heading = alignmentElement.GetDouble();
                                 }
+                                else if (alignmentElement.ValueKind == JsonValueKind.String)
+                                {
+                                    var alignmentStr = alignmentElement.GetString();
+                                    if (!string.IsNullOrWhiteSpace(alignmentStr) && alignmentStr != "-")
+                                    {
+                                        double.TryParse(alignmentStr, out heading);
+                                    }
+                                }
+                            }
+
+                            // If we have a valid runway ID, add it
+                            if (!string.IsNullOrWhiteSpace(id))
+                            {
+                                runwayList.Add(new RunwayData
+                                {
+                                    Designator = id,
+                                    TrueHeading = heading,
+                                    DisplayName = heading > 0 ? $"{id} ({heading:F0}°)" : id
+                                });
                             }
                         }
                     }
                 }
+
+                System.Diagnostics.Debug.WriteLine($"Found {runwayList.Count} runways");
             }
-            catch
+            catch (Exception ex)
             {
+                System.Diagnostics.Debug.WriteLine($"Error fetching runways: {ex.Message}");
                 // Return empty list on error
             }
 
