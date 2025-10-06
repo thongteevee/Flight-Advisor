@@ -1,4 +1,4 @@
-﻿// Services/IWeatherApi.cs
+// Services/IWeatherApi.cs
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Refit;
