@@ -127,11 +127,11 @@ namespace FlightAdvisor.Services
                 }
             }
 
-            // 5. Check Density Altitude
-            if (metar.Temperature.HasValue && metar.Altimeter.HasValue)
+            // 5. Check Density Altitude - FIXED: Added null check for elevation
+            if (metar.Temperature.HasValue && metar.Altimeter.HasValue && metar.Elevation.HasValue)
             {
                 var densityAltitude = _weatherService.CalculateDensityAltitude(
-                    metar.Elevation,
+                    metar.Elevation.Value,  // Use .Value since we checked it's not null
                     metar.Temperature.Value,
                     metar.Altimeter.Value
                 );
@@ -273,7 +273,7 @@ namespace FlightAdvisor.Services
                 WindGust = metar.WindGust,
                 Visibility = metar.Visibility,
                 Altimeter = metar.Altimeter,
-                Elevation = metar.Elevation,
+                Elevation = metar.Elevation ?? 0,  // FIXED: Handle nullable elevation with default value
                 WeatherConditions = metar.WeatherString,
                 RawMetar = metar.RawObservation
             };
