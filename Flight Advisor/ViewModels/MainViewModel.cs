@@ -1,4 +1,4 @@
-﻿// ViewModels/MainViewModel.cs
+// ViewModels/MainViewModel.cs
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -11,6 +11,7 @@ using System.Threading.Tasks;
 using ReactiveUI;
 using FlightAdvisor.Models;
 using FlightAdvisor.Services;
+using Avalonia.Threading;
 
 namespace FlightAdvisor.ViewModels
 {
@@ -346,7 +347,10 @@ namespace FlightAdvisor.ViewModels
             {
                 if (ShowResults && !IsLoading)
                 {
-                    await RefreshWeatherAsync();
+                    await Avalonia.Threading.Dispatcher.UIThread.InvokeAsync(async () =>
+                    {
+                        await RefreshWeatherAsync();
+                    });
                 }
             };
             _refreshTimer.Start();
