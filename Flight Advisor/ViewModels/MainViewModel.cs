@@ -1,17 +1,15 @@
-// ViewModels/MainViewModel.cs - FIXED VERSION
+// ViewModels/MainViewModel.cs - WITH RUNWAY SELECTION
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
 using System.Reactive;
-using System.Reactive.Linq;
 using System.Text.Json;
 using System.Threading.Tasks;
 using ReactiveUI;
 using FlightAdvisor.Models;
 using FlightAdvisor.Services;
-using Avalonia.Threading;
 
 namespace FlightAdvisor.ViewModels
 {
@@ -20,7 +18,6 @@ namespace FlightAdvisor.ViewModels
         private readonly WeatherService _weatherService;
         private readonly DecisionEngine _decisionEngine;
         private AircraftDatabase _aircraftDatabase;
-        private System.Timers.Timer _refreshTimer;
 
         // Observable Properties
         private string _selectedFlightType;
@@ -56,7 +53,7 @@ namespace FlightAdvisor.ViewModels
             }
             else
             {
-                _isDarkMode = true; // Default fallback
+                _isDarkMode = true;
             }
 
             // Setup commands
@@ -76,14 +73,10 @@ namespace FlightAdvisor.ViewModels
                 "Just Looking at Weather"
             };
 
-            Runways = new ObservableCollection<string>();
             DepartureRunways = new ObservableCollection<string>();
             ArrivalRunways = new ObservableCollection<string>();
 
-            // Start with flight details collapsed
             ShowFlightDetails = false;
-
-            // Load aircraft database
             LoadAircraftDatabase();
         }
 
@@ -221,7 +214,6 @@ namespace FlightAdvisor.ViewModels
 
         public ObservableCollection<string> FlightTypes { get; }
         public ObservableCollection<Aircraft> AllAircraft { get; private set; }
-        public ObservableCollection<string> Runways { get; }
         public ObservableCollection<string> DepartureRunways { get; }
         public ObservableCollection<string> ArrivalRunways { get; }
 
@@ -246,7 +238,6 @@ namespace FlightAdvisor.ViewModels
                 var jsonPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Assets", "Data", "aircraft.json");
                 var json = File.ReadAllText(jsonPath);
                 _aircraftDatabase = JsonSerializer.Deserialize<AircraftDatabase>(json);
-
                 AllAircraft = new ObservableCollection<Aircraft>(_aircraftDatabase.GetAllAircraft());
             }
             catch (Exception ex)
@@ -265,43 +256,23 @@ namespace FlightAdvisor.ViewModels
             ShowAdvancedMode = !ShowAdvancedMode;
         }
 
-        private async Task LoadRunwaysAsync(string icao)
-        {
-            try
-            {
-                var runways = await _weatherService.GetRunwaysAsync(icao);
-                Runways.Clear();
-
-                foreach (var runway in runways)
-                {
-                    Runways.Add(runway);
-                }
-
-                if (Runways.Any())
-                    SelectedRunway = Runways.First();
-            }
-            catch (Exception ex)
-            {
-                Runways.Clear();
-                Runways.Add("Auto-Selected");
-                SelectedRunway = "Auto-Selected";
-            }
-        }
-
         private async Task LoadDepartureRunwaysAsync(string icao)
         {
             try
             {
-                var runways = await FetchRunwayData(icao);
+                var runways = await FetchRunwayDataAsync(icao);
                 DepartureRunways.Clear();
 
                 foreach (var runway in runways)
                 {
-                    DepartureRunways.Add(runway);
+                    DepartureRunways.Add(runway.DisplayName);
                 }
 
+                // Auto-select best runway if we have wind data
                 if (DepartureRunways.Any())
+                {
                     SelectedRunway = DepartureRunways.First();
+                }
             }
             catch
             {
@@ -314,12 +285,12 @@ namespace FlightAdvisor.ViewModels
         {
             try
             {
-                var runways = await FetchRunwayData(icao);
+                var runways = await FetchRunwayDataAsync(icao);
                 ArrivalRunways.Clear();
 
                 foreach (var runway in runways)
                 {
-                    ArrivalRunways.Add(runway);
+                    ArrivalRunways.Add(runway.DisplayName);
                 }
             }
             catch
@@ -329,17 +300,17 @@ namespace FlightAdvisor.ViewModels
             }
         }
 
-        private async Task<List<string>> FetchRunwayData(string icao)
+        private async Task<List<RunwayData>> FetchRunwayDataAsync(string icao)
         {
             string url = $"https://aviationweather.gov/api/data/airport?ids={icao}&format=json";
             using var client = new System.Net.Http.HttpClient();
-            var runwayList = new List<string>();
+            var runwayList = new List<RunwayData>();
 
             try
             {
                 client.DefaultRequestHeaders.Add("User-Agent", "FlightAdvisor/1.0");
                 var response = await client.GetStringAsync(url);
-                var airportArray = System.Text.Json.JsonDocument.Parse(response);
+                var airportArray = JsonDocument.Parse(response);
 
                 if (airportArray.RootElement.GetArrayLength() > 0)
                 {
@@ -349,12 +320,23 @@ namespace FlightAdvisor.ViewModels
                     {
                         foreach (var runway in runwaysElement.EnumerateArray())
                         {
-                            if (runway.TryGetProperty("id", out var idElement))
+                            if (runway.TryGetProperty("id", out var idElement) &&
+                                runway.TryGetProperty("alignment", out var alignmentElement))
                             {
                                 var id = idElement.GetString();
-                                if (!string.IsNullOrWhiteSpace(id))
+                                var alignmentStr = alignmentElement.GetString();
+
+                                if (!string.IsNullOrWhiteSpace(id) &&
+                                    !string.IsNullOrWhiteSpace(alignmentStr) &&
+                                    alignmentStr != "-" &&
+                                    double.TryParse(alignmentStr, out double heading))
                                 {
-                                    runwayList.Add(id);
+                                    runwayList.Add(new RunwayData
+                                    {
+                                        Designator = id,
+                                        TrueHeading = heading,
+                                        DisplayName = $"{id} ({heading:F0}°)"
+                                    });
                                 }
                             }
                         }
@@ -367,6 +349,34 @@ namespace FlightAdvisor.ViewModels
             }
 
             return runwayList;
+        }
+
+        private string SelectBestRunway(List<RunwayData> runways, int windDirection, int windSpeed)
+        {
+            if (!runways.Any() || windSpeed == 0)
+                return runways.FirstOrDefault()?.DisplayName ?? "Auto-Selected";
+
+            // Calculate headwind component for each runway
+            var bestRunway = runways
+                .Select(r => new
+                {
+                    Runway = r,
+                    HeadwindComponent = CalculateHeadwindComponent(windDirection, windSpeed, (int)r.TrueHeading)
+                })
+                .OrderByDescending(x => x.HeadwindComponent)
+                .FirstOrDefault();
+
+            return bestRunway?.Runway.DisplayName ?? runways.First().DisplayName;
+        }
+
+        private int CalculateHeadwindComponent(int windDirection, int windSpeed, int runwayHeading)
+        {
+            var angleDiff = Math.Abs(windDirection - runwayHeading);
+            if (angleDiff > 180)
+                angleDiff = 360 - angleDiff;
+
+            var headwind = windSpeed * Math.Cos(angleDiff * Math.PI / 180);
+            return (int)Math.Round(headwind);
         }
 
         private async Task CheckWeatherAsync()
@@ -389,6 +399,20 @@ namespace FlightAdvisor.ViewModels
                 {
                     ErrorMessage = $"Unable to fetch weather data for {DepartureIcao}. Please verify the airport code and try again.";
                     return;
+                }
+
+                // Load runways and auto-select best one
+                var runways = await FetchRunwayDataAsync(DepartureIcao);
+                if (runways.Any() && metar.WindDirection.HasValue && metar.WindSpeed.HasValue)
+                {
+                    DepartureRunways.Clear();
+                    foreach (var rwy in runways)
+                    {
+                        DepartureRunways.Add(rwy.DisplayName);
+                    }
+
+                    // Auto-select runway with most headwind
+                    SelectedRunway = SelectBestRunway(runways, metar.WindDirection.Value, metar.WindSpeed.Value);
                 }
 
                 TafData taf = null;
@@ -424,7 +448,6 @@ namespace FlightAdvisor.ViewModels
 
                 LastUpdateTime = DateTime.Now.ToString("HH:mm:ss");
                 ShowResults = true;
-
             }
             catch (WeatherServiceException ex)
             {
@@ -458,5 +481,14 @@ namespace FlightAdvisor.ViewModels
         }
 
         #endregion
+    }
+
+    // Helper class for runway data
+    public class RunwayData
+    {
+        public string Designator { get; set; }
+        public double TrueHeading { get; set; }
+        public string DisplayName { get; set; }
+        public double Reciprocal => (TrueHeading + 180) % 360;
     }
 }
