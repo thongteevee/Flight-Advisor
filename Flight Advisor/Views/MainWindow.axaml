@@ -535,7 +535,7 @@
 								   Spacing="16"
 								   IsVisible="{Binding !ShowResults}"
 								   Opacity="0.5">
-							<TextBlock Text="&#x2708;"
+							<TextBlock Text="&#x2708;"
 									  FontSize="64"
 									  HorizontalAlignment="Center"/>
 							<TextBlock Text="Enter flight details and check weather"
