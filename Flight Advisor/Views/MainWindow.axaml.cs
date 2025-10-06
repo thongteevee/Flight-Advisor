@@ -87,9 +87,15 @@ namespace FlightAdvisor.Views
         }
 
         private void ToggleAdvanced_Click(object sender, Avalonia.Interactivity.RoutedEventArgs e)
-{
-    if (DataContext is MainViewModel vm)
-        vm.ShowAdvancedMode = !vm.ShowAdvancedMode;
-}
+        {
+            if (DataContext is MainViewModel vm)
+                vm.ShowAdvancedMode = !vm.ShowAdvancedMode;
+        }
+
+        private void ToggleFlightDetails_Click(object sender, Avalonia.Interactivity.RoutedEventArgs e)
+        {
+            if (DataContext is MainViewModel vm)
+                vm.ShowFlightDetails = !vm.ShowFlightDetails;
+        }
     }
 }
