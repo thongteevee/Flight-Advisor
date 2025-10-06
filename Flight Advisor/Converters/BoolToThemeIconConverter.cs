@@ -11,9 +11,9 @@ namespace FlightAdvisor.Converters
         {
             if (value is bool isDarkMode)
             {
-                return isDarkMode ? "\u2600\uFE0F" : "\u1F319";
+                return isDarkMode ? "\u2600\uFE0F" : "\u263E";
             }
-            return "\u1F319";
+            return "\u263E";
         }
 
         public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
