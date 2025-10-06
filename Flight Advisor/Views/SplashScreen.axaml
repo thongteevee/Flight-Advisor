@@ -1,5 +1,3 @@
-<!-- Views/SplashScreen.axaml -->
-<!-- Optional: Add this for a beautiful startup animation -->
 <Window xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         x:Class="FlightAdvisor.Views.SplashScreen"
@@ -8,9 +6,8 @@
         Height="400"
         WindowStartupLocation="CenterScreen"
         SystemDecorations="None"
-        TransparencyLevelHint="AcrylicBlur"
-        Background="Transparent"
         CanResize="False">
+
 
 	<Border CornerRadius="20" ClipToBounds="True">
 		<Border.Background>
