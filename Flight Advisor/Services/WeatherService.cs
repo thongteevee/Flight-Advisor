@@ -43,21 +43,9 @@ namespace FlightAdvisor.Services
                 var result = await _weatherApi.GetMetarAsync(icao.ToUpper(), hours: 0);
                 return result?.FirstOrDefault();
             }
-            catch (ApiException apiEx)
-            {
-                // Log the actual response content
-                var content = apiEx.Content ?? string.Empty;
-                throw new WeatherServiceException(
-                    $"Failed to fetch METAR for {icao}. Response: {content}",
-                    apiEx
-                );
-            }
             catch (Exception ex)
             {
-                throw new WeatherServiceException(
-                    $"Failed to fetch METAR for {icao}: {ex.Message}",
-                    ex
-                );
+                throw new WeatherServiceException($"Failed to fetch METAR for {icao}: {ex.Message}", ex);
             }
         }
 
