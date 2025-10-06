@@ -23,7 +23,7 @@ namespace FlightAdvisor.Services
             DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
             AllowTrailingCommas = true,
             ReadCommentHandling = JsonCommentHandling.Skip,
-            Converters = { new FlexibleDateTimeConverter(), new NullableIntConverter() }
+            Converters = { new FlexibleDateTimeConverter(), new NullableIntConverter(), new NullableLongConverter() }
         };
 
         public WeatherService()
@@ -33,6 +33,47 @@ namespace FlightAdvisor.Services
                 BaseAddress = new Uri(NOAA_BASE_URL)
             };
             _httpClient.DefaultRequestHeaders.Add("User-Agent", "FlightAdvisor/1.0");
+        }
+
+        /// <summary>
+        /// Custom converter for nullable longs that handles null values
+        /// </summary>
+        public class NullableLongConverter : JsonConverter<long?>
+        {
+            public override long? Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
+            {
+                if (reader.TokenType == JsonTokenType.Null)
+                {
+                    return null;
+                }
+
+                if (reader.TokenType == JsonTokenType.Number)
+                {
+                    return reader.GetInt64();
+                }
+
+                if (reader.TokenType == JsonTokenType.String)
+                {
+                    var stringValue = reader.GetString();
+                    if (string.IsNullOrEmpty(stringValue))
+                        return null;
+
+                    if (long.TryParse(stringValue, out var result))
+                        return result;
+
+                    return null;
+                }
+
+                return null;
+            }
+
+            public override void Write(Utf8JsonWriter writer, long? value, JsonSerializerOptions options)
+            {
+                if (value.HasValue)
+                    writer.WriteNumberValue(value.Value);
+                else
+                    writer.WriteNullValue();
+            }
         }
 
         /// <summary>
