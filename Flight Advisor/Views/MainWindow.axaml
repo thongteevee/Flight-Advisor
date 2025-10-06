@@ -527,6 +527,53 @@
 								</Border>
 
 								<Border Background="{DynamicResource AppSurface2}"
+       CornerRadius="10"
+       Padding="20"
+       IsVisible="{Binding DepartureRunways.Count, Converter={StaticResource CountToBoolConverter}}">
+									<StackPanel Spacing="16">
+										<TextBlock Text="Runway Analysis"
+												  Classes="subheader"/>
+
+										<StackPanel Spacing="8">
+											<TextBlock Text="Select Runway"
+													  Classes="label"/>
+											<ComboBox ItemsSource="{Binding DepartureRunways}"
+													 SelectedItem="{Binding SelectedRunway}"
+													 HorizontalAlignment="Stretch"
+													 Background="{DynamicResource AppSurface}"
+													 Foreground="{DynamicResource AppText}"
+													 BorderBrush="{DynamicResource AppBorder}"
+													 Padding="12"
+													 Height="44"/>
+										</StackPanel>
+
+										<Grid ColumnDefinitions="*,*" ColumnSpacing="16">
+											<StackPanel Grid.Column="0">
+												<TextBlock Classes="label" Text="HEADWIND"/>
+												<TextBlock Text="{Binding HeadwindComponent, StringFormat='{}{0}kts'}"
+														  FontSize="20"
+														  FontWeight="SemiBold"
+														  Foreground="#22c55e"/>
+											</StackPanel>
+
+											<StackPanel Grid.Column="1">
+												<TextBlock Classes="label" Text="CROSSWIND"/>
+												<TextBlock Text="{Binding CrosswindComponent, StringFormat='{}{0}kts'}"
+														  FontSize="20"
+														  FontWeight="SemiBold"
+														  Foreground="#f59e0b"/>
+											</StackPanel>
+										</Grid>
+
+										<TextBlock Text="Wind components update automatically when runway changes"
+												  FontSize="11"
+												  Foreground="{DynamicResource AppTextQuaternary}"
+												  HorizontalAlignment="Center"/>
+									</StackPanel>
+								</Border>
+
+
+								<Border Background="{DynamicResource AppSurface2}"
 									   CornerRadius="10"
 									   Padding="20"
 									   IsVisible="{Binding DepartureRunways.Count, Converter={StaticResource CountToBoolConverter}}">
