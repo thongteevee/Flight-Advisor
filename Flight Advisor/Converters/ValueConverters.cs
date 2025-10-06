@@ -1,4 +1,3 @@
-﻿// Converters/ValueConverters.cs
 using System;
 using System.Globalization;
 using Avalonia.Data.Converters;
@@ -7,9 +6,6 @@ using FlightAdvisor.Models;
 
 namespace FlightAdvisor.Converters
 {
-    /// <summary>
-    /// Converts DecisionType to Color
-    /// </summary>
     public class DecisionToColorConverter : IValueConverter
     {
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
@@ -33,9 +29,6 @@ namespace FlightAdvisor.Converters
         }
     }
 
-    /// <summary>
-    /// Converts DecisionType to Display Text
-    /// </summary>
     public class DecisionToTextConverter : IValueConverter
     {
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
@@ -44,10 +37,10 @@ namespace FlightAdvisor.Converters
             {
                 return decision switch
                 {
-                    DecisionType.Go => "✅ GO - Conditions Favorable",
-                    DecisionType.Caution => "⚠️ CAUTION - Review Hazards",
-                    DecisionType.NoGo => "❌ NO-GO - Flight Not Recommended",
-                    _ => "ℹ️ Information Only"
+                    DecisionType.Go => "\u2705 GO - Conditions Favorable",
+                    DecisionType.Caution => "\u26A0\uFE0F CAUTION - Review Hazards",
+                    DecisionType.NoGo => "\u274C NO-GO - Flight Not Recommended",
+                    _ => "\u2139\uFE0F Information Only"
                 };
             }
             return "Unknown";
@@ -59,9 +52,6 @@ namespace FlightAdvisor.Converters
         }
     }
 
-    /// <summary>
-    /// Converts count to boolean (for visibility)
-    /// </summary>
     public class CountToBoolConverter : IValueConverter
     {
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
@@ -77,16 +67,13 @@ namespace FlightAdvisor.Converters
         }
     }
 
-    /// <summary>
-    /// Converts boolean to expand/collapse icon
-    /// </summary>
     public class BoolToExpandIconConverter : IValueConverter
     {
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
             if (value is bool isExpanded)
-                return isExpanded ? "▼" : "▶";
-            return "▶";
+                return isExpanded ? "\u25BC" : "\u25B6";
+            return "\u25B6";
         }
 
         public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
