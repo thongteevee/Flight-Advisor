@@ -1,12 +1,49 @@
+﻿// Views/MainWindow.axaml.cs
 using Avalonia.Controls;
+using Avalonia.Controls.Notifications;
+using FlightAdvisor.ViewModels;
+using System;
 
 namespace FlightAdvisor.Views
 {
     public partial class MainWindow : Window
     {
+        private WindowNotificationManager _notificationManager;
+
         public MainWindow()
         {
             InitializeComponent();
+
+            DataContext = new MainViewModel();
+
+            // Setup notification manager for toast notifications
+            _notificationManager = new WindowNotificationManager(this)
+            {
+                Position = NotificationPosition.TopRight,
+                MaxItems = 3
+            };
+
+            // Subscribe to weather refresh events
+            if (DataContext is MainViewModel viewModel)
+            {
+                viewModel.PropertyChanged += (s, e) =>
+                {
+                    if (e.PropertyName == nameof(MainViewModel.LastUpdateTime))
+                    {
+                        ShowWeatherUpdateNotification();
+                    }
+                };
+            }
+        }
+
+        private void ShowWeatherUpdateNotification()
+        {
+            _notificationManager?.Show(new Notification(
+                "Weather Updated",
+                "Latest weather data has been fetched successfully.",
+                NotificationType.Success,
+                TimeSpan.FromSeconds(3)
+            ));
         }
     }
 }
