@@ -5,6 +5,7 @@ using FlightAdvisor.ViewModels;
 using System;
 using System.Reactive.Linq;
 using Avalonia.Interactivity;
+using Avalonia;
 
 namespace FlightAdvisor.Views
 {
@@ -96,6 +97,18 @@ namespace FlightAdvisor.Views
         {
             if (DataContext is MainViewModel vm)
                 vm.ShowFlightDetails = !vm.ShowFlightDetails;
+        }
+
+        private void ToggleTheme_Click(object sender, Avalonia.Interactivity.RoutedEventArgs e)
+        {
+            if (Application.Current is App app)
+            {
+                app.ToggleTheme();
+                if (DataContext is MainViewModel vm)
+                {
+                    vm.IsDarkMode = app.IsDarkMode;
+                }
+            }
         }
     }
 }

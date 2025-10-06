@@ -661,15 +661,15 @@
 			</Grid>
 		</Grid>
 		<Canvas HorizontalAlignment="Right"
-				VerticalAlignment="Bottom"
-				Margin="0,0,40,40">
+        VerticalAlignment="Bottom"
+        Margin="0,0,40,40">
 
 			<Border Width="56"
 					Height="56"
 					CornerRadius="28"
 					BoxShadow="0 4 12 0 #000000">
 
-				<Button Command="{Binding ToggleThemeCommand}"
+				<Button Click="ToggleTheme_Click"
 						ToolTip.Tip="Toggle Dark/Light Mode"
 						Width="56"
 						Height="56"
