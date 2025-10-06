@@ -1,20 +1,533 @@
 <Window xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:vm="using:FlightAdvisor.ViewModels"
-        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+        xmlns:ui="using:FluentAvalonia.UI.Controls"
         x:Class="FlightAdvisor.Views.MainWindow"
-        x:DataType="vm:MainWindowViewModel"
+        x:DataType="vm:MainViewModel"
         Icon="/Assets/avalonia-logo.ico"
-        Title="FlightAdvisor">
+        Title="Flight Advisor"
+        Width="1400"
+        Height="900"
+        WindowStartupLocation="CenterScreen"
+        Background="#0a0e1a"
+        TransparencyLevelHint="AcrylicBlur">
 
-    <Design.DataContext>
-        <!-- This only sets the DataContext for the previewer in an IDE,
-             to set the actual DataContext for runtime, set the DataContext property in code (look at App.axaml.cs) -->
-        <vm:MainWindowViewModel/>
-    </Design.DataContext>
+	<Window.Styles>
+		<!-- Garmin-Style Color Palette -->
+		<Style Selector="TextBlock.header">
+			<Setter Property="FontSize" Value="24"/>
+			<Setter Property="FontWeight" Value="SemiBold"/>
+			<Setter Property="Foreground" Value="#e0e7ff"/>
+		</Style>
 
-    <TextBlock Text="{Binding Greeting}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+		<Style Selector="TextBlock.subheader">
+			<Setter Property="FontSize" Value="16"/>
+			<Setter Property="FontWeight" Value="Medium"/>
+			<Setter Property="Foreground" Value="#c7d2fe"/>
+		</Style>
 
+		<Style Selector="TextBlock.label">
+			<Setter Property="FontSize" Value="12"/>
+			<Setter Property="Foreground" Value="#94a3b8"/>
+			<Setter Property="Margin" Value="0,0,0,4"/>
+		</Style>
+
+		<Style Selector="TextBox.modern">
+			<Setter Property="Background" Value="#1e293b"/>
+			<Setter Property="Foreground" Value="#e0e7ff"/>
+			<Setter Property="BorderBrush" Value="#334155"/>
+			<Setter Property="BorderThickness" Value="1"/>
+			<Setter Property="Padding" Value="12,8"/>
+			<Setter Property="CornerRadius" Value="6"/>
+			<Setter Property="FontSize" Value="14"/>
+		</Style>
+
+		<Style Selector="TextBox.modern:pointerover">
+			<Setter Property="BorderBrush" Value="#4f46e5"/>
+		</Style>
+
+		<Style Selector="TextBox.modern:focus">
+			<Setter Property="BorderBrush" Value="#6366f1"/>
+			<Setter Property="BorderThickness" Value="2"/>
+		</Style>
+
+		<Style Selector="ComboBox.modern">
+			<Setter Property="Background" Value="#1e293b"/>
+			<Setter Property="Foreground" Value="#e0e7ff"/>
+			<Setter Property="BorderBrush" Value="#334155"/>
+			<Setter Property="Padding" Value="12,8"/>
+			<Setter Property="CornerRadius" Value="6"/>
+		</Style>
+
+		<Style Selector="Button.primary">
+			<Setter Property="Background" Value="#4f46e5"/>
+			<Setter Property="Foreground" Value="White"/>
+			<Setter Property="Padding" Value="24,12"/>
+			<Setter Property="CornerRadius" Value="8"/>
+			<Setter Property="FontWeight" Value="SemiBold"/>
+			<Setter Property="FontSize" Value="15"/>
+		</Style>
+
+		<Style Selector="Button.primary:pointerover">
+			<Setter Property="Background" Value="#6366f1"/>
+		</Style>
+
+		<Style Selector="Button.secondary">
+			<Setter Property="Background" Value="#1e293b"/>
+			<Setter Property="Foreground" Value="#e0e7ff"/>
+			<Setter Property="BorderBrush" Value="#334155"/>
+			<Setter Property="BorderThickness" Value="1"/>
+			<Setter Property="Padding" Value="16,8"/>
+			<Setter Property="CornerRadius" Value="6"/>
+		</Style>
+	</Window.Styles>
+
+	<Grid>
+		<!-- Background with gradient -->
+		<Border>
+			<Border.Background>
+				<LinearGradientBrush StartPoint="0%,0%" EndPoint="100%,100%">
+					<GradientStop Color="#0a0e1a" Offset="0"/>
+					<GradientStop Color="#1e293b" Offset="1"/>
+				</LinearGradientBrush>
+			</Border.Background>
+		</Border>
+
+		<!-- Main Content with fade-in animation -->
+		<Grid Margin="40" Name="MainContent">
+			<Grid.Styles>
+				<Style Selector="Grid#MainContent">
+					<Style.Animations>
+						<Animation Duration="0:0:0.8" FillMode="Forward">
+							<KeyFrame Cue="0%">
+								<Setter Property="Opacity" Value="0"/>
+								<Setter Property="TranslateTransform.Y" Value="20"/>
+							</KeyFrame>
+							<KeyFrame Cue="100%">
+								<Setter Property="Opacity" Value="1"/>
+								<Setter Property="TranslateTransform.Y" Value="0"/>
+							</KeyFrame>
+						</Animation>
+					</Style.Animations>
+				</Style>
+			</Grid.Styles>
+
+			<Grid.RowDefinitions>
+				<RowDefinition Height="Auto"/>
+				<RowDefinition Height="*"/>
+			</Grid.RowDefinitions>
+
+			<!-- Header -->
+			<StackPanel Grid.Row="0" Margin="0,0,0,30">
+				<TextBlock Classes="header" Text="Flight Advisor"/>
+				<TextBlock Classes="subheader"
+                          Text="Should I Go Flying Today?"
+                          Margin="0,8,0,0"
+                          Opacity="0.8"/>
+			</StackPanel>
+
+			<!-- Main Input/Output Area -->
+			<Grid Grid.Row="1">
+				<Grid.ColumnDefinitions>
+					<ColumnDefinition Width="400"/>
+					<ColumnDefinition Width="*"/>
+				</Grid.ColumnDefinitions>
+
+				<!-- Left Panel - Input -->
+				<Border Grid.Column="0"
+                       Background="#0f172a"
+                       CornerRadius="12"
+                       Padding="24"
+                       BoxShadow="0 4 20 0 #000000">
+
+					<ScrollViewer>
+						<StackPanel Spacing="20">
+							<!-- Flight Type Selection -->
+							<StackPanel>
+								<TextBlock Classes="subheader" Text="Flight Type" Margin="0,0,0,12"/>
+								<ItemsControl ItemsSource="{Binding FlightTypes}">
+									<ItemsControl.ItemTemplate>
+										<DataTemplate>
+											<Button Command="{Binding $parent[Window].DataContext.SelectFlightTypeCommand}"
+                                                   CommandParameter="{Binding}"
+                                                   Classes="secondary"
+                                                   HorizontalAlignment="Stretch"
+                                                   Margin="0,4">
+												<TextBlock Text="{Binding}"/>
+											</Button>
+										</DataTemplate>
+									</ItemsControl.ItemTemplate>
+								</ItemsControl>
+							</StackPanel>
+
+							<!-- Aircraft Selection -->
+							<StackPanel IsVisible="{Binding SelectedFlightType, Converter={x:Static ObjectConverters.IsNotNull}}">
+								<TextBlock Classes="label" Text="AIRCRAFT"/>
+								<ComboBox ItemsSource="{Binding AllAircraft}"
+                                         SelectedItem="{Binding SelectedAircraft}"
+                                         Classes="modern"
+                                         HorizontalAlignment="Stretch">
+									<ComboBox.ItemTemplate>
+										<DataTemplate>
+											<TextBlock Text="{Binding Name}"/>
+										</DataTemplate>
+									</ComboBox.ItemTemplate>
+								</ComboBox>
+							</StackPanel>
+
+							<!-- Airport Inputs -->
+							<StackPanel Spacing="16" IsVisible="{Binding SelectedFlightType, Converter={x:Static ObjectConverters.IsNotNull}}">
+								<StackPanel>
+									<TextBlock Classes="label" Text="DEPARTURE AIRPORT (ICAO)"/>
+									<TextBox Text="{Binding DepartureIcao}"
+                                            Classes="modern"
+                                            Watermark="e.g., KSFO"
+                                            MaxLength="4"/>
+								</StackPanel>
+
+								<StackPanel>
+									<TextBlock Classes="label" Text="ARRIVAL AIRPORT (ICAO)"/>
+									<TextBox Text="{Binding ArrivalIcao}"
+                                            Classes="modern"
+                                            Watermark="e.g., KLAX"
+                                            MaxLength="4"/>
+								</StackPanel>
+
+								<StackPanel>
+									<TextBlock Classes="label" Text="ALTERNATE AIRPORT (ICAO)"/>
+									<TextBox Text="{Binding AlternateIcao}"
+                                            Classes="modern"
+                                            Watermark="Optional"
+                                            MaxLength="4"/>
+								</StackPanel>
+
+								<StackPanel>
+									<TextBlock Classes="label" Text="RUNWAY"/>
+									<ComboBox ItemsSource="{Binding Runways}"
+                                             SelectedItem="{Binding SelectedRunway}"
+                                             Classes="modern"
+                                             HorizontalAlignment="Stretch"/>
+								</StackPanel>
+							</StackPanel>
+
+							<!-- Flight Details -->
+							<StackPanel Spacing="12" IsVisible="{Binding SelectedFlightType, Converter={x:Static ObjectConverters.IsNotNull}}">
+								<TextBlock Classes="subheader" Text="Flight Details" Margin="0,8,0,8"/>
+
+								<Grid ColumnDefinitions="*,*" RowDefinitions="Auto,Auto,Auto,Auto" ColumnSpacing="12" RowSpacing="12">
+									<StackPanel Grid.Row="0" Grid.Column="0">
+										<TextBlock Classes="label" Text="TAKEOFF WEIGHT (LBS)"/>
+										<TextBox Text="{Binding TakeoffWeight}" Classes="modern"/>
+									</StackPanel>
+
+									<StackPanel Grid.Row="0" Grid.Column="1">
+										<TextBlock Classes="label" Text="LANDING WEIGHT (LBS)"/>
+										<TextBox Text="{Binding LandingWeight}" Classes="modern"/>
+									</StackPanel>
+
+									<StackPanel Grid.Row="1" Grid.Column="0">
+										<TextBlock Classes="label" Text="SOULS ON BOARD"/>
+										<TextBox Text="{Binding SoulsOnBoard}" Classes="modern"/>
+									</StackPanel>
+
+									<StackPanel Grid.Row="1" Grid.Column="1">
+										<TextBlock Classes="label" Text="FUEL (GALLONS)"/>
+										<TextBox Text="{Binding FuelPlanned}" Classes="modern"/>
+									</StackPanel>
+								</Grid>
+
+								<StackPanel>
+									<TextBlock Classes="label" Text="ROUTE"/>
+									<TextBox Text="{Binding Route}"
+                                            Classes="modern"
+                                            Watermark="e.g., Direct or V123 ABC"
+                                            AcceptsReturn="True"
+                                            Height="60"/>
+								</StackPanel>
+							</StackPanel>
+
+							<!-- Check Weather Button -->
+							<Button Classes="primary"
+                                   Command="{Binding CheckWeatherCommand}"
+                                   HorizontalAlignment="Stretch"
+                                   IsVisible="{Binding DepartureIcao, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"
+                                   Margin="0,12,0,0">
+								<StackPanel Orientation="Horizontal" Spacing="8">
+									<TextBlock Text="🌤" FontSize="18"/>
+									<TextBlock Text="Check Weather" VerticalAlignment="Center"/>
+								</StackPanel>
+							</Button>
+
+							<!-- AI Help Button (Future) -->
+							<Button Classes="secondary"
+                                   HorizontalAlignment="Stretch"
+                                   IsVisible="False">
+								<StackPanel Orientation="Horizontal" Spacing="8">
+									<TextBlock Text="🤖" FontSize="16"/>
+									<TextBlock Text="AI Help" VerticalAlignment="Center"/>
+								</StackPanel>
+							</Button>
+
+						</StackPanel>
+					</ScrollViewer>
+				</Border>
+
+				<!-- Right Panel - Results -->
+				<Border Grid.Column="1"
+                       Margin="24,0,0,0"
+                       Background="#0f172a"
+                       CornerRadius="12"
+                       Padding="32"
+                       BoxShadow="0 4 20 0 #000000">
+					
+					<Grid>
+						<!-- Loading State -->
+						<StackPanel HorizontalAlignment="Center"
+								   VerticalAlignment="Center"
+								   IsVisible="{Binding IsLoading}"
+								   Spacing="16">
+							<ui:ProgressRing IsActive="True" Width="48" Height="48"/>
+							<TextBlock Text="Fetching weather data..."
+									  Classes="subheader"
+									  HorizontalAlignment="Center"/>
+						</StackPanel>
+
+						<!-- Error State -->
+						<Border IsVisible="{Binding ErrorMessage, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"
+							   Background="#7f1d1d"
+							   BorderBrush="#dc2626"
+							   BorderThickness="1"
+							   CornerRadius="8"
+							   Padding="20">
+							<StackPanel Spacing="12">
+								<TextBlock Text="❌ Error"
+										  FontSize="18"
+										  FontWeight="SemiBold"
+										  Foreground="#fecaca"/>
+								<TextBlock Text="{Binding ErrorMessage}"
+										  Foreground="#fecaca"
+										  TextWrapping="Wrap"/>
+							</StackPanel>
+						</Border>
+
+						<!-- Results Display -->
+						<ScrollViewer IsVisible="{Binding ShowResults}">
+							<StackPanel Spacing="24">
+
+								<!-- Decision Header -->
+								<Border CornerRadius="12" Padding="24">
+									<Border.Background>
+										<SolidColorBrush Color="{Binding CurrentDecision.Decision, Converter={StaticResource DecisionToColorConverter}}"/>
+									</Border.Background>
+
+									<StackPanel Spacing="12">
+										<TextBlock Text="{Binding CurrentDecision.Decision, Converter={StaticResource DecisionToTextConverter}}"
+												  FontSize="28"
+												  FontWeight="Bold"
+												  Foreground="White"/>
+										<TextBlock Text="{Binding CurrentDecision.Summary}"
+												  FontSize="16"
+												  Foreground="White"
+												  Opacity="0.95"
+												  TextWrapping="Wrap"/>
+									</StackPanel>
+								</Border>
+
+								<!-- Weather Summary -->
+								<Border Background="#1e293b"
+									   CornerRadius="10"
+									   Padding="20">
+									<StackPanel Spacing="16">
+										<StackPanel Orientation="Horizontal" Spacing="12">
+											<TextBlock Text="🌍" FontSize="20"/>
+											<TextBlock Classes="subheader"
+													  Text="{Binding WeatherSummary.AirportName}"
+													  VerticalAlignment="Center"/>
+											<TextBlock Text="{Binding WeatherSummary.AirportIcao, StringFormat='({0})'}"
+													  Foreground="#94a3b8"
+													  VerticalAlignment="Center"
+													  Margin="0,0,0,0"/>
+										</StackPanel>
+
+										<Grid ColumnDefinitions="*,*,*" RowDefinitions="Auto,Auto" ColumnSpacing="20" RowSpacing="12">
+											<!-- Temperature -->
+											<StackPanel Grid.Row="0" Grid.Column="0">
+												<TextBlock Classes="label" Text="TEMPERATURE"/>
+												<TextBlock Text="{Binding WeatherSummary.Temperature, StringFormat='{}{0}°C'}"
+														  FontSize="24"
+														  FontWeight="SemiBold"
+														  Foreground="#e0e7ff"/>
+											</StackPanel>
+
+											<!-- Wind -->
+											<StackPanel Grid.Row="0" Grid.Column="1">
+												<TextBlock Classes="label" Text="WIND"/>
+												<TextBlock FontSize="20" Foreground="#e0e7ff">
+													<Run Text="{Binding WeatherSummary.WindDirection, StringFormat='{}{0}°'}"/>
+													<Run Text=" at "/>
+													<Run Text="{Binding WeatherSummary.WindSpeed, StringFormat='{}{0}kts'}"/>
+												</TextBlock>
+											</StackPanel>
+
+											<!-- Visibility -->
+											<StackPanel Grid.Row="0" Grid.Column="2">
+												<TextBlock Classes="label" Text="VISIBILITY"/>
+												<TextBlock Text="{Binding WeatherSummary.Visibility}"
+														  FontSize="20"
+														  Foreground="#e0e7ff"/>
+											</StackPanel>
+
+											<!-- Altimeter -->
+											<StackPanel Grid.Row="1" Grid.Column="0">
+												<TextBlock Classes="label" Text="ALTIMETER"/>
+												<TextBlock Text="{Binding WeatherSummary.Altimeter, StringFormat='{}{0:F2} inHg'}"
+														  FontSize="18"
+														  Foreground="#e0e7ff"/>
+											</StackPanel>
+
+											<!-- Crosswind -->
+											<StackPanel Grid.Row="1" Grid.Column="1" IsVisible="{Binding WeatherSummary.CrosswindComponent, Converter={x:Static ObjectConverters.IsNotNull}}">
+												<TextBlock Classes="label" Text="CROSSWIND"/>
+												<TextBlock Text="{Binding WeatherSummary.CrosswindComponent, StringFormat='{}{0}kts'}"
+														  FontSize="18"
+														  Foreground="#fbbf24"/>
+											</StackPanel>
+
+											<!-- Density Altitude -->
+											<StackPanel Grid.Row="1" Grid.Column="2" IsVisible="{Binding WeatherSummary.DensityAltitude, Converter={x:Static ObjectConverters.IsNotNull}}">
+												<TextBlock Classes="label" Text="DENSITY ALT"/>
+												<TextBlock Text="{Binding WeatherSummary.DensityAltitude, StringFormat='{}{0}ft'}"
+														  FontSize="18"
+														  Foreground="#e0e7ff"/>
+											</StackPanel>
+										</Grid>
+
+										<!-- Update Time -->
+										<TextBlock Text="{Binding LastUpdateTime, StringFormat='Last updated: {0}'}"
+												  Foreground="#64748b"
+												  FontSize="12"
+												  HorizontalAlignment="Right"/>
+									</StackPanel>
+								</Border>
+
+								<!-- Hazards List -->
+								<ItemsControl ItemsSource="{Binding CurrentDecision.Hazards}">
+									<ItemsControl.ItemTemplate>
+										<DataTemplate>
+											<Border Background="#7f1d1d"
+												   BorderBrush="#dc2626"
+												   BorderThickness="1"
+												   CornerRadius="8"
+												   Padding="16"
+												   Margin="0,8">
+												<StackPanel Spacing="8">
+													<StackPanel Orientation="Horizontal" Spacing="8">
+														<TextBlock Text="⚠️" FontSize="16"/>
+														<TextBlock Text="{Binding Type}"
+																  FontWeight="SemiBold"
+																  FontSize="16"
+																  Foreground="#fecaca"/>
+													</StackPanel>
+													<TextBlock Text="{Binding Description}"
+															  Foreground="#fecaca"
+															  TextWrapping="Wrap"/>
+													<TextBlock Text="{Binding QuickTip}"
+															  Foreground="#fca5a5"
+															  FontSize="12"
+															  Opacity="0.9"
+															  TextWrapping="Wrap"
+															  Margin="0,4,0,0"/>
+												</StackPanel>
+											</Border>
+										</DataTemplate>
+									</ItemsControl.ItemTemplate>
+								</ItemsControl>
+
+								<!-- Recommendations -->
+								<Border Background="#1e293b" CornerRadius="10" Padding="20"
+									   IsVisible="{Binding CurrentDecision.Recommendations.Count, Converter={StaticResource CountToBoolConverter}}">
+									<StackPanel Spacing="12">
+										<TextBlock Text="📋 Recommendations"
+												  Classes="subheader"/>
+										<ItemsControl ItemsSource="{Binding CurrentDecision.Recommendations}">
+											<ItemsControl.ItemTemplate>
+												<DataTemplate>
+													<StackPanel Orientation="Horizontal" Spacing="8" Margin="0,4">
+														<TextBlock Text="•" Foreground="#94a3b8"/>
+														<TextBlock Text="{Binding}"
+																  Foreground="#c7d2fe"
+																  TextWrapping="Wrap"/>
+													</StackPanel>
+												</DataTemplate>
+											</ItemsControl.ItemTemplate>
+										</ItemsControl>
+									</StackPanel>
+								</Border>
+
+								<!-- Advanced Mode Toggle -->
+								<Button Classes="secondary"
+									   Command="{Binding ToggleAdvancedModeCommand}"
+									   HorizontalAlignment="Left">
+									<StackPanel Orientation="Horizontal" Spacing="8">
+										<TextBlock Text="{Binding ShowAdvancedMode, Converter={StaticResource BoolToExpandIconConverter}}"/>
+										<TextBlock Text="Advanced Details"/>
+									</StackPanel>
+								</Button>
+
+								<!-- Advanced Mode Content -->
+								<StackPanel Spacing="16" IsVisible="{Binding ShowAdvancedMode}">
+									<!-- Raw METAR -->
+									<Border Background="#1e293b" CornerRadius="10" Padding="20">
+										<StackPanel Spacing="8">
+											<TextBlock Classes="label" Text="RAW METAR"/>
+											<TextBox Text="{Binding WeatherSummary.RawMetar}"
+													IsReadOnly="True"
+													TextWrapping="Wrap"
+													Background="#0f172a"
+													Foreground="#22d3ee"
+													FontFamily="Consolas,Courier New"
+													FontSize="13"
+													Padding="12"/>
+										</StackPanel>
+									</Border>
+
+									<!-- Raw TAF -->
+									<Border Background="#1e293b" CornerRadius="10" Padding="20"
+										   IsVisible="{Binding WeatherSummary.RawTaf, Converter={x:Static StringConverters.IsNotNullOrEmpty}}">
+										<StackPanel Spacing="8">
+											<TextBlock Classes="label" Text="RAW TAF"/>
+											<TextBox Text="{Binding WeatherSummary.RawTaf}"
+													IsReadOnly="True"
+													TextWrapping="Wrap"
+													Background="#0f172a"
+													Foreground="#a78bfa"
+													FontFamily="Consolas,Courier New"
+													FontSize="13"
+													Padding="12"/>
+										</StackPanel>
+									</Border>
+								</StackPanel>
+
+							</StackPanel>
+						</ScrollViewer>
+
+						<!-- Empty State -->
+						<StackPanel HorizontalAlignment="Center"
+								   VerticalAlignment="Center"
+								   Spacing="16"
+								   IsVisible="{Binding !ShowResults}"
+								   Opacity="0.5">
+							<TextBlock Text="✈️"
+									  FontSize="64"
+									  HorizontalAlignment="Center"/>
+							<TextBlock Text="Enter flight details and check weather"
+									  Classes="subheader"
+									  HorizontalAlignment="Center"
+									  Opacity="0.7"/>
+						</StackPanel>
+					</Grid>
+				</Border>
+			</Grid>
+		</Grid>
+	</Grid>
 </Window>
