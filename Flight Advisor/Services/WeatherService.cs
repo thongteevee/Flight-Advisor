@@ -6,31 +6,33 @@ using System.Net.Http;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
-using Refit;
 using FlightAdvisor.Models;
 
 namespace FlightAdvisor.Services
 {
     public class WeatherService
     {
-        private readonly IWeatherApi _weatherApi;
+        private readonly HttpClient _httpClient;
         private const string NOAA_BASE_URL = "https://aviationweather.gov";
 
         // Custom JSON options with flexible DateTime handling
         private static readonly JsonSerializerOptions JsonOptions = new JsonSerializerOptions
         {
             PropertyNameCaseInsensitive = true,
+            NumberHandling = JsonNumberHandling.AllowReadingFromString,
+            DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
+            AllowTrailingCommas = true,
+            ReadCommentHandling = JsonCommentHandling.Skip,
             Converters = { new FlexibleDateTimeConverter() }
         };
 
         public WeatherService()
         {
-            var refitSettings = new RefitSettings
+            _httpClient = new HttpClient
             {
-                ContentSerializer = new SystemTextJsonContentSerializer(JsonOptions)
+                BaseAddress = new Uri(NOAA_BASE_URL)
             };
-
-            _weatherApi = RestService.For<IWeatherApi>(NOAA_BASE_URL, refitSettings);
+            _httpClient.DefaultRequestHeaders.Add("User-Agent", "FlightAdvisor/1.0");
         }
 
         /// <summary>
@@ -40,8 +42,20 @@ namespace FlightAdvisor.Services
         {
             try
             {
-                var result = await _weatherApi.GetMetarAsync(icao.ToUpper(), hours: 0);
-                return result?.FirstOrDefault();
+                var url = $"/api/data/metar?ids={icao.ToUpper()}&format=json";
+                var response = await _httpClient.GetStringAsync(url);
+
+                // Parse the JSON array
+                var metarArray = JsonSerializer.Deserialize<List<MetarData>>(response, JsonOptions);
+                return metarArray?.FirstOrDefault();
+            }
+            catch (HttpRequestException ex)
+            {
+                throw new WeatherServiceException($"Failed to fetch METAR for {icao}: Network error - {ex.Message}", ex);
+            }
+            catch (JsonException ex)
+            {
+                throw new WeatherServiceException($"Failed to fetch METAR for {icao}: Invalid response format - {ex.Message}", ex);
             }
             catch (Exception ex)
             {
@@ -56,8 +70,12 @@ namespace FlightAdvisor.Services
         {
             try
             {
-                var result = await _weatherApi.GetTafAsync(icao.ToUpper(), hours: 0);
-                return result?.FirstOrDefault();
+                var url = $"/api/data/taf?ids={icao.ToUpper()}&format=json";
+                var response = await _httpClient.GetStringAsync(url);
+
+                // Parse the JSON array
+                var tafArray = JsonSerializer.Deserialize<List<TafData>>(response, JsonOptions);
+                return tafArray?.FirstOrDefault();
             }
             catch (Exception ex)
             {
@@ -72,8 +90,32 @@ namespace FlightAdvisor.Services
         {
             try
             {
-                var runways = new List<string>();
-                runways.Add("Auto-Selected");
+                var url = $"/api/data/airport?ids={icao.ToUpper()}&format=json";
+                var response = await _httpClient.GetStringAsync(url);
+
+                var airportArray = JsonDocument.Parse(response);
+                var runways = new List<string> { "Auto-Selected" };
+
+                if (airportArray.RootElement.GetArrayLength() > 0)
+                {
+                    var airportData = airportArray.RootElement[0];
+
+                    if (airportData.TryGetProperty("runways", out var runwaysElement))
+                    {
+                        foreach (var runway in runwaysElement.EnumerateArray())
+                        {
+                            if (runway.TryGetProperty("id", out var idElement))
+                            {
+                                var id = idElement.GetString();
+                                if (!string.IsNullOrWhiteSpace(id))
+                                {
+                                    runways.Add(id);
+                                }
+                            }
+                        }
+                    }
+                }
+
                 return runways;
             }
             catch (Exception ex)
@@ -186,7 +228,6 @@ namespace FlightAdvisor.Services
             if (reader.TokenType == JsonTokenType.Number)
             {
                 var timestamp = reader.GetInt64();
-                // Convert Unix timestamp to DateTime (assuming seconds since epoch)
                 return DateTimeOffset.FromUnixTimeSeconds(timestamp).DateTime;
             }
 
@@ -216,7 +257,6 @@ namespace FlightAdvisor.Services
                 }
             }
 
-            // If all else fails, return a default value
             return DateTime.MinValue;
         }
 
