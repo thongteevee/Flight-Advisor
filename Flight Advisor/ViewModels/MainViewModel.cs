@@ -432,12 +432,6 @@ namespace FlightAdvisor.ViewModels
                 await CheckWeatherAsync();
             }
         }
-
-        private void ToggleFlightDetails_Click(object sender, Avalonia.Interactivity.RoutedEventArgs e)
-        {
-            if (sender is Avalonia.Controls.Control control && control.DataContext is MainViewModel vm)
-                vm.ShowFlightDetails = !vm.ShowFlightDetails;
-        }
         #endregion
     }
 }
