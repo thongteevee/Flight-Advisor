@@ -10,6 +10,7 @@ using System.Threading.Tasks;
 using ReactiveUI;
 using FlightAdvisor.Models;
 using FlightAdvisor.Services;
+using System.Net.Http;
 
 namespace FlightAdvisor.ViewModels
 {
@@ -44,6 +45,25 @@ namespace FlightAdvisor.ViewModels
         private bool _isDarkMode;
         private int? _headwindComponent;
         private int? _crosswindComponent;
+
+        /// <summary>
+        /// Parse runway heading from runway designator (e.g., "09" -> 090°, "22L" -> 220°)
+        /// </summary>
+        private int ParseRunwayHeading(string runway)
+        {
+            if (string.IsNullOrEmpty(runway))
+                return 0;
+
+            // Extract numeric part from runway designator (e.g., "09L" -> "09", "22" -> "22")
+            var numericPart = new string(runway.TakeWhile(char.IsDigit).ToArray());
+
+            if (int.TryParse(numericPart, out var heading))
+            {
+                return heading * 10; // Convert to degrees (09 -> 090°)
+            }
+
+            return 0;
+        }
 
         #endregion
 
@@ -354,24 +374,19 @@ namespace FlightAdvisor.ViewModels
 
                 DepartureRunways.Clear();
 
+                // Always add "Auto-Selected" as first option
+                DepartureRunways.Add("Auto-Selected");
+
                 if (runways.Any())
                 {
                     foreach (var runway in runways)
                     {
                         DepartureRunways.Add(runway.DisplayName);
                     }
+                }
 
-                    // Auto-select first runway
-                    if (DepartureRunways.Any())
-                    {
-                        SelectedRunway = DepartureRunways.First();
-                    }
-                }
-                else
-                {
-                    DepartureRunways.Add("Auto-Selected");
-                    SelectedRunway = "Auto-Selected";
-                }
+                // Default to Auto-Selected
+                SelectedRunway = "Auto-Selected";
             }
             catch
             {
@@ -393,16 +408,15 @@ namespace FlightAdvisor.ViewModels
 
                 ArrivalRunways.Clear();
 
+                // Always add "Auto-Selected" as first option
+                ArrivalRunways.Add("Auto-Selected");
+
                 if (runways.Any())
                 {
                     foreach (var runway in runways)
                     {
                         ArrivalRunways.Add(runway.DisplayName);
                     }
-                }
-                else
-                {
-                    ArrivalRunways.Add("Auto-Selected");
                 }
             }
             catch
@@ -465,21 +479,57 @@ namespace FlightAdvisor.ViewModels
                                 }
                             }
 
-                            // If we have a valid runway ID, add it
+                            // If we have a valid runway ID, process it
                             if (!string.IsNullOrWhiteSpace(id))
                             {
-                                runwayList.Add(new RunwayData
+                                // Check if runway ID contains a slash (e.g., "04L/22R", "11/29")
+                                if (id.Contains("/"))
                                 {
-                                    Designator = id,
-                                    TrueHeading = heading,
-                                    DisplayName = heading > 0 ? $"{id} ({heading:F0}°)" : id
-                                });
+                                    var parts = id.Split('/');
+
+                                    // First direction
+                                    if (parts.Length > 0 && !string.IsNullOrWhiteSpace(parts[0]))
+                                    {
+                                        var rwy1 = parts[0].Trim();
+                                        var heading1 = ParseRunwayHeading(rwy1);
+                                        runwayList.Add(new RunwayData
+                                        {
+                                            Designator = rwy1,
+                                            TrueHeading = heading1,
+                                            DisplayName = $"{rwy1} ({heading1}°)"
+                                        });
+                                    }
+
+                                    // Second direction (reciprocal)
+                                    if (parts.Length > 1 && !string.IsNullOrWhiteSpace(parts[1]))
+                                    {
+                                        var rwy2 = parts[1].Trim();
+                                        var heading2 = ParseRunwayHeading(rwy2);
+                                        runwayList.Add(new RunwayData
+                                        {
+                                            Designator = rwy2,
+                                            TrueHeading = heading2,
+                                            DisplayName = $"{rwy2} ({heading2}°)"
+                                        });
+                                    }
+                                }
+                                else
+                                {
+                                    // Single runway or helipad
+                                    var rwyHeading = heading > 0 ? heading : ParseRunwayHeading(id);
+                                    runwayList.Add(new RunwayData
+                                    {
+                                        Designator = id,
+                                        TrueHeading = rwyHeading,
+                                        DisplayName = rwyHeading > 0 ? $"{id} ({rwyHeading}°)" : id
+                                    });
+                                }
                             }
                         }
                     }
                 }
 
-                System.Diagnostics.Debug.WriteLine($"Found {runwayList.Count} runways");
+                System.Diagnostics.Debug.WriteLine($"Found {runwayList.Count} runway options");
             }
             catch (Exception ex)
             {
@@ -598,16 +648,32 @@ namespace FlightAdvisor.ViewModels
 
                 // Load runways and auto-select best one based on wind
                 var runways = await FetchRunwayDataAsync(DepartureIcao);
-                if (runways.Any() && metar.WindDirection.HasValue && metar.WindSpeed.HasValue)
+
+                DepartureRunways.Clear();
+                DepartureRunways.Add("Auto-Selected");
+
+                if (runways.Any())
                 {
-                    DepartureRunways.Clear();
                     foreach (var rwy in runways)
                     {
                         DepartureRunways.Add(rwy.DisplayName);
                     }
 
-                    // Auto-select runway with most headwind
-                    SelectedRunway = SelectBestRunway(runways, metar.WindDirection.Value, metar.WindSpeed.Value);
+                    // If wind data is available and user has "Auto-Selected", pick best runway
+                    if (metar.WindDirection.HasValue && metar.WindSpeed.HasValue)
+                    {
+                        var bestRunway = SelectBestRunway(runways, metar.WindDirection.Value, metar.WindSpeed.Value);
+                        SelectedRunway = bestRunway;
+                    }
+                    else
+                    {
+                        // No wind data, default to Auto-Selected
+                        SelectedRunway = "Auto-Selected";
+                    }
+                }
+                else
+                {
+                    SelectedRunway = "Auto-Selected";
                 }
 
                 // Fetch TAF data (optional)
