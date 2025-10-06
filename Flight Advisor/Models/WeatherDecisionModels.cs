@@ -1,12 +1,8 @@
-﻿// Models/WeatherDecisionModels.cs
 using System;
 using System.Collections.Generic;
 
 namespace FlightAdvisor.Models
 {
-    /// <summary>
-    /// Go/No-Go Decision Result
-    /// </summary>
     public class FlightDecision
     {
         public DecisionType Decision { get; set; }
@@ -21,10 +17,10 @@ namespace FlightAdvisor.Models
         {
             return Decision switch
             {
-                DecisionType.Go => "✅",
-                DecisionType.Caution => "⚠️",
-                DecisionType.NoGo => "❌",
-                _ => "ℹ️"
+                DecisionType.Go => "\u2705",
+                DecisionType.Caution => "\u26A0\uFE0F",
+                DecisionType.NoGo => "\u274C",
+                _ => "\u2139\uFE0F"
             };
         }
 
@@ -40,9 +36,6 @@ namespace FlightAdvisor.Models
         }
     }
 
-    /// <summary>
-    /// Decision Types
-    /// </summary>
     public enum DecisionType
     {
         Go,
@@ -51,9 +44,6 @@ namespace FlightAdvisor.Models
         InformationOnly
     }
 
-    /// <summary>
-    /// Weather Hazard
-    /// </summary>
     public class WeatherHazard
     {
         public string Type { get; set; }
@@ -64,9 +54,6 @@ namespace FlightAdvisor.Models
         public string QuickTip { get; set; }
     }
 
-    /// <summary>
-    /// Hazard Severity
-    /// </summary>
     public enum HazardSeverity
     {
         Low,
@@ -75,9 +62,6 @@ namespace FlightAdvisor.Models
         Critical
     }
 
-    /// <summary>
-    /// Weather Summary for Display
-    /// </summary>
     public class WeatherSummary
     {
         public string AirportIcao { get; set; }
@@ -96,7 +80,6 @@ namespace FlightAdvisor.Models
         public string RawMetar { get; set; }
         public string RawTaf { get; set; }
 
-        // Calculated values
         public int? CrosswindComponent { get; set; }
         public int? HeadwindComponent { get; set; }
         public int? DensityAltitude { get; set; }
