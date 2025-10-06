@@ -1,4 +1,4 @@
-﻿// Views/MainWindow.axaml.cs
+// Views/MainWindow.axaml.cs
 using Avalonia.Controls;
 using Avalonia.Controls.Notifications;
 using FlightAdvisor.ViewModels;
@@ -44,6 +44,36 @@ namespace FlightAdvisor.Views
                 NotificationType.Success,
                 TimeSpan.FromSeconds(3)
             ));
+        }
+
+        private void FlightLesson_Click(object sender, Avalonia.Interactivity.RoutedEventArgs e)
+        {
+            if (DataContext is MainViewModel vm)
+                vm.SelectedFlightType = "Flight Lesson";
+        }
+
+        private void Gliding_Click(object sender, Avalonia.Interactivity.RoutedEventArgs e)
+        {
+            if (DataContext is MainViewModel vm)
+                vm.SelectedFlightType = "Gliding";
+        }
+
+        private void Recreational_Click(object sender, Avalonia.Interactivity.RoutedEventArgs e)
+        {
+            if (DataContext is MainViewModel vm)
+                vm.SelectedFlightType = "Recreational Flight";
+        }
+
+        private void Discovery_Click(object sender, Avalonia.Interactivity.RoutedEventArgs e)
+        {
+            if (DataContext is MainViewModel vm)
+                vm.SelectedFlightType = "Discovery Flight";
+        }
+
+        private void JustLooking_Click(object sender, Avalonia.Interactivity.RoutedEventArgs e)
+        {
+            if (DataContext is MainViewModel vm)
+                vm.SelectedFlightType = "Just Looking at Weather";
         }
     }
 }
