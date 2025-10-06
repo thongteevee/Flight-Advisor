@@ -4,6 +4,7 @@ using Avalonia.Controls.Notifications;
 using FlightAdvisor.ViewModels;
 using System;
 using System.Reactive.Linq;
+using Avalonia.Interactivity;
 
 namespace FlightAdvisor.Views
 {
@@ -47,34 +48,34 @@ namespace FlightAdvisor.Views
             ));
         }
 
-        private void FlightLesson_Click(object sender, Avalonia.Interactivity.RoutedEventArgs e)
+        private void FlightLesson_Click(object sender, RoutedEventArgs e)
         {
-            if (DataContext is MainViewModel vm)
-                vm.SelectedFlightType = "Flight Lesson";
+            if (DataContext is FlightAdvisor.ViewModels.MainViewModel vm)
+                vm.SelectFlightTypeCommand.Execute("Flight Lesson");
         }
 
-        private void Gliding_Click(object sender, Avalonia.Interactivity.RoutedEventArgs e)
+        private void Gliding_Click(object sender, RoutedEventArgs e)
         {
-            if (DataContext is MainViewModel vm)
-                vm.SelectedFlightType = "Gliding";
+            if (DataContext is FlightAdvisor.ViewModels.MainViewModel vm)
+                vm.SelectFlightTypeCommand.Execute("Gliding");
         }
 
-        private void Recreational_Click(object sender, Avalonia.Interactivity.RoutedEventArgs e)
+        private void Recreational_Click(object sender, RoutedEventArgs e)
         {
-            if (DataContext is MainViewModel vm)
-                vm.SelectedFlightType = "Recreational Flight";
+            if (DataContext is FlightAdvisor.ViewModels.MainViewModel vm)
+                vm.SelectFlightTypeCommand.Execute("Recreational Flight");
         }
 
-        private void Discovery_Click(object sender, Avalonia.Interactivity.RoutedEventArgs e)
+        private void Discovery_Click(object sender, RoutedEventArgs e)
         {
-            if (DataContext is MainViewModel vm)
-                vm.SelectedFlightType = "Discovery Flight";
+            if (DataContext is FlightAdvisor.ViewModels.MainViewModel vm)
+                vm.SelectFlightTypeCommand.Execute("Discovery Flight");
         }
 
-        private void JustLooking_Click(object sender, Avalonia.Interactivity.RoutedEventArgs e)
+        private void JustLooking_Click(object sender, RoutedEventArgs e)
         {
-            if (DataContext is MainViewModel vm)
-                vm.SelectedFlightType = "Just Looking at Weather";
+            if (DataContext is FlightAdvisor.ViewModels.MainViewModel vm)
+                vm.SelectFlightTypeCommand.Execute("Just Looking at Weather");
         }
 
         private async void CheckWeather_Click(object sender, Avalonia.Interactivity.RoutedEventArgs e)
