@@ -1,4 +1,4 @@
-// ViewModels/MainViewModel.cs - ADD THESE PROPERTIES AND UPDATES
+// ViewModels/MainViewModel.cs - FIXED VERSION
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -41,16 +41,23 @@ namespace FlightAdvisor.ViewModels
         private bool _showAdvancedMode;
         private bool _showResults;
         private string _lastUpdateTime;
-
         private bool _showFlightDetails;
-
-        private bool _isDarkMode = true;
-
+        private bool _isDarkMode;
 
         public MainViewModel()
         {
             _weatherService = new WeatherService();
             _decisionEngine = new DecisionEngine(_weatherService);
+
+            // Initialize IsDarkMode based on the actual app theme
+            if (Avalonia.Application.Current is App app)
+            {
+                _isDarkMode = app.IsDarkMode;
+            }
+            else
+            {
+                _isDarkMode = true; // Default fallback
+            }
 
             // Setup commands
             CheckWeatherCommand = ReactiveCommand.CreateFromTask(CheckWeatherAsync);
@@ -280,6 +287,7 @@ namespace FlightAdvisor.ViewModels
                 SelectedRunway = "Auto-Selected";
             }
         }
+
         private async Task LoadDepartureRunwaysAsync(string icao)
         {
             try
@@ -439,13 +447,13 @@ namespace FlightAdvisor.ViewModels
                 await CheckWeatherAsync();
             }
         }
+
         private void ToggleTheme()
         {
-            IsDarkMode = !IsDarkMode;
-
             if (Avalonia.Application.Current is App app)
             {
                 app.ToggleTheme();
+                IsDarkMode = app.IsDarkMode;
             }
         }
 
