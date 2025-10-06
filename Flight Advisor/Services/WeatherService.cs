@@ -1,4 +1,4 @@
-// Services/WeatherService.cs - DIAGNOSTIC VERSION
+// Services/WeatherService.cs
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -33,47 +33,6 @@ namespace FlightAdvisor.Services
                 BaseAddress = new Uri(NOAA_BASE_URL)
             };
             _httpClient.DefaultRequestHeaders.Add("User-Agent", "FlightAdvisor/1.0");
-        }
-
-        /// <summary>
-        /// Custom converter for nullable longs that handles null values
-        /// </summary>
-        public class NullableLongConverter : JsonConverter<long?>
-        {
-            public override long? Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
-            {
-                if (reader.TokenType == JsonTokenType.Null)
-                {
-                    return null;
-                }
-
-                if (reader.TokenType == JsonTokenType.Number)
-                {
-                    return reader.GetInt64();
-                }
-
-                if (reader.TokenType == JsonTokenType.String)
-                {
-                    var stringValue = reader.GetString();
-                    if (string.IsNullOrEmpty(stringValue))
-                        return null;
-
-                    if (long.TryParse(stringValue, out var result))
-                        return result;
-
-                    return null;
-                }
-
-                return null;
-            }
-
-            public override void Write(Utf8JsonWriter writer, long? value, JsonSerializerOptions options)
-            {
-                if (value.HasValue)
-                    writer.WriteNumberValue(value.Value);
-                else
-                    writer.WriteNullValue();
-            }
         }
 
         /// <summary>
@@ -251,6 +210,47 @@ namespace FlightAdvisor.Services
     }
 
     /// <summary>
+    /// Custom converter for nullable longs that handles null values
+    /// </summary>
+    public class NullableLongConverter : JsonConverter<long?>
+    {
+        public override long? Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
+        {
+            if (reader.TokenType == JsonTokenType.Null)
+            {
+                return null;
+            }
+
+            if (reader.TokenType == JsonTokenType.Number)
+            {
+                return reader.GetInt64();
+            }
+
+            if (reader.TokenType == JsonTokenType.String)
+            {
+                var stringValue = reader.GetString();
+                if (string.IsNullOrEmpty(stringValue))
+                    return null;
+
+                if (long.TryParse(stringValue, out var result))
+                    return result;
+
+                return null;
+            }
+
+            return null;
+        }
+
+        public override void Write(Utf8JsonWriter writer, long? value, JsonSerializerOptions options)
+        {
+            if (value.HasValue)
+                writer.WriteNumberValue(value.Value);
+            else
+                writer.WriteNullValue();
+        }
+    }
+
+    /// <summary>
     /// Custom converter for nullable integers that handles null values
     /// </summary>
     public class NullableIntConverter : JsonConverter<int?>
@@ -264,7 +264,13 @@ namespace FlightAdvisor.Services
 
             if (reader.TokenType == JsonTokenType.Number)
             {
-                return reader.GetInt32();
+                // Try to get as Int32, but if it's too large, return null
+                if (reader.TryGetInt32(out var intValue))
+                {
+                    return intValue;
+                }
+                // Number is too large for Int32, skip it
+                return null;
             }
 
             if (reader.TokenType == JsonTokenType.String)
