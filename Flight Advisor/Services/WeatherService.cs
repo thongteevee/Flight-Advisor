@@ -1,4 +1,4 @@
-// Services/WeatherService.cs
+// Services/WeatherService.cs - DIAGNOSTIC VERSION
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -23,7 +23,7 @@ namespace FlightAdvisor.Services
             DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
             AllowTrailingCommas = true,
             ReadCommentHandling = JsonCommentHandling.Skip,
-            Converters = { new FlexibleDateTimeConverter() }
+            Converters = { new FlexibleDateTimeConverter(), new NullableIntConverter() }
         };
 
         public WeatherService()
@@ -45,6 +45,9 @@ namespace FlightAdvisor.Services
                 var url = $"/api/data/metar?ids={icao.ToUpper()}&format=json";
                 var response = await _httpClient.GetStringAsync(url);
 
+                // Log the raw response for debugging
+                System.Diagnostics.Debug.WriteLine($"Raw METAR Response: {response}");
+
                 // Parse the JSON array
                 var metarArray = JsonSerializer.Deserialize<List<MetarData>>(response, JsonOptions);
                 return metarArray?.FirstOrDefault();
@@ -55,7 +58,7 @@ namespace FlightAdvisor.Services
             }
             catch (JsonException ex)
             {
-                throw new WeatherServiceException($"Failed to fetch METAR for {icao}: Invalid response format - {ex.Message}", ex);
+                throw new WeatherServiceException($"Failed to fetch METAR for {icao}: Invalid response format - {ex.Message}\nInner: {ex.InnerException?.Message}", ex);
             }
             catch (Exception ex)
             {
@@ -203,6 +206,47 @@ namespace FlightAdvisor.Services
             if (wx.Contains("IC")) hazards.Add("Ice Crystals");
 
             return hazards;
+        }
+    }
+
+    /// <summary>
+    /// Custom converter for nullable integers that handles null values
+    /// </summary>
+    public class NullableIntConverter : JsonConverter<int?>
+    {
+        public override int? Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
+        {
+            if (reader.TokenType == JsonTokenType.Null)
+            {
+                return null;
+            }
+
+            if (reader.TokenType == JsonTokenType.Number)
+            {
+                return reader.GetInt32();
+            }
+
+            if (reader.TokenType == JsonTokenType.String)
+            {
+                var stringValue = reader.GetString();
+                if (string.IsNullOrEmpty(stringValue))
+                    return null;
+
+                if (int.TryParse(stringValue, out var result))
+                    return result;
+
+                return null;
+            }
+
+            return null;
+        }
+
+        public override void Write(Utf8JsonWriter writer, int? value, JsonSerializerOptions options)
+        {
+            if (value.HasValue)
+                writer.WriteNumberValue(value.Value);
+            else
+                writer.WriteNullValue();
         }
     }
 
