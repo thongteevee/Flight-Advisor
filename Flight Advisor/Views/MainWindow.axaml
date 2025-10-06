@@ -661,35 +661,40 @@
 			</Grid>
 		</Grid>
 		<Canvas HorizontalAlignment="Right"
-        VerticalAlignment="Bottom"
-        Margin="0,0,40,40">
+				VerticalAlignment="Bottom"
+				Margin="0,0,40,40">
 
-			<Button Command="{Binding ToggleThemeCommand}"
-					ToolTip.Tip="Toggle Dark/Light Mode"
-					Width="56"
+			<Border Width="56"
 					Height="56"
 					CornerRadius="28"
-					Background="#1e293b"
-					BorderBrush="#334155"
-					BorderThickness="2"
-					Cursor="Hand"
 					BoxShadow="0 4 12 0 #000000">
 
-				<Button.Styles>
-					<Style Selector="Button:pointerover">
-						<Setter Property="Background" Value="#334155"/>
-						<Setter Property="BorderBrush" Value="#4f46e5"/>
-					</Style>
-					<Style Selector="Button:pressed">
-						<Setter Property="Background" Value="#475569"/>
-					</Style>
-				</Button.Styles>
+				<Button Command="{Binding ToggleThemeCommand}"
+						ToolTip.Tip="Toggle Dark/Light Mode"
+						Width="56"
+						Height="56"
+						CornerRadius="28"
+						Background="#1e293b"
+						BorderBrush="#334155"
+						BorderThickness="2"
+						Cursor="Hand">
 
-				<TextBlock Text="{Binding IsDarkMode, Converter={StaticResource BoolToThemeIconConverter}}"
-						   FontSize="24"
-						   VerticalAlignment="Center"
-						   HorizontalAlignment="Center"/>
-			</Button>
+					<Button.Styles>
+						<Style Selector="Button:pointerover">
+							<Setter Property="Background" Value="#334155"/>
+							<Setter Property="BorderBrush" Value="#4f46e5"/>
+						</Style>
+						<Style Selector="Button:pressed">
+							<Setter Property="Background" Value="#475569"/>
+						</Style>
+					</Button.Styles>
+
+					<TextBlock Text="{Binding IsDarkMode, Converter={StaticResource BoolToThemeIconConverter}}"
+							   FontSize="24"
+							   VerticalAlignment="Center"
+							   HorizontalAlignment="Center"/>
+				</Button>
+			</Border>
 		</Canvas>
 	</Grid>
 </Window>
