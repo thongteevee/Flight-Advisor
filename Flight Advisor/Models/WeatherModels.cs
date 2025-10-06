@@ -1,4 +1,4 @@
-﻿// Models/WeatherModels.cs
+// Models/WeatherModels.cs
 using System;
 using System.Collections.Generic;
 using System.Text.Json.Serialization;
@@ -11,7 +11,7 @@ namespace FlightAdvisor.Models
     public class MetarData
     {
         [JsonPropertyName("metar_id")]
-        public int MetarId { get; set; }
+        public int? MetarId { get; set; }
 
         [JsonPropertyName("icaoId")]
         public string IcaoId { get; set; }
@@ -20,10 +20,14 @@ namespace FlightAdvisor.Models
         public DateTime ReceiptTime { get; set; }
 
         [JsonPropertyName("obsTime")]
-        public DateTime ObservationTime { get; set; }
+        public long ObservationTimeUnix { get; set; }
 
         [JsonPropertyName("reportTime")]
         public DateTime ReportTime { get; set; }
+
+        // Computed property for ObservationTime
+        [JsonIgnore]
+        public DateTime ObservationTime => DateTimeOffset.FromUnixTimeSeconds(ObservationTimeUnix).DateTime;
 
         [JsonPropertyName("temp")]
         public double? Temperature { get; set; }
@@ -50,7 +54,7 @@ namespace FlightAdvisor.Models
         public double? SeaLevelPressure { get; set; }
 
         [JsonPropertyName("qcField")]
-        public int QcField { get; set; }
+        public int? QcField { get; set; }
 
         [JsonPropertyName("wxString")]
         public string WeatherString { get; set; }
@@ -95,19 +99,19 @@ namespace FlightAdvisor.Models
         public string RawObservation { get; set; }
 
         [JsonPropertyName("mostRecent")]
-        public int MostRecent { get; set; }
+        public int? MostRecent { get; set; }
 
         [JsonPropertyName("lat")]
-        public double Latitude { get; set; }
+        public double? Latitude { get; set; }
 
         [JsonPropertyName("lon")]
-        public double Longitude { get; set; }
+        public double? Longitude { get; set; }
 
         [JsonPropertyName("elev")]
         public int Elevation { get; set; }
 
         [JsonPropertyName("prior")]
-        public int Prior { get; set; }
+        public int? Prior { get; set; }
 
         [JsonPropertyName("name")]
         public string AirportName { get; set; }
@@ -134,7 +138,7 @@ namespace FlightAdvisor.Models
     public class TafData
     {
         [JsonPropertyName("taf_id")]
-        public int TafId { get; set; }
+        public int? TafId { get; set; }
 
         [JsonPropertyName("icaoId")]
         public string IcaoId { get; set; }
@@ -158,16 +162,16 @@ namespace FlightAdvisor.Models
         public string RawTaf { get; set; }
 
         [JsonPropertyName("mostRecent")]
-        public int MostRecent { get; set; }
+        public int? MostRecent { get; set; }
 
         [JsonPropertyName("lat")]
-        public double Latitude { get; set; }
+        public double? Latitude { get; set; }
 
         [JsonPropertyName("lon")]
-        public double Longitude { get; set; }
+        public double? Longitude { get; set; }
 
         [JsonPropertyName("elev")]
-        public int Elevation { get; set; }
+        public int? Elevation { get; set; }
 
         [JsonPropertyName("fcsts")]
         public List<TafForecast> Forecasts { get; set; }
