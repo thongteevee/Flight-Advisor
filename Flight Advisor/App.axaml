@@ -1,10 +1,25 @@
 <Application xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             x:Class="FlightAdvisor.App"
+             xmlns:local="using:FlightAdvisor"
+             xmlns:conv="using:FlightAdvisor.Converters"
              xmlns:sty="using:FluentAvalonia.Styling"
-             RequestedThemeVariant="Light">
+             x:Class="FlightAdvisor.App"
+             RequestedThemeVariant="Dark">
+
+	<Application.Resources>
+		<!-- Register Converters -->
+		<conv:DecisionToColorConverter x:Key="DecisionToColorConverter"/>
+		<conv:DecisionToTextConverter x:Key="DecisionToTextConverter"/>
+		<conv:CountToBoolConverter x:Key="CountToBoolConverter"/>
+		<conv:BoolToExpandIconConverter x:Key="BoolToExpandIconConverter"/>
+	</Application.Resources>
 
 	<Application.Styles>
-		<sty:FluentAvaloniaTheme />
+		<!-- FluentAvalonia Theme -->
+		<sty:FluentAvaloniaTheme PreferSystemTheme="False"
+                                 PreferUserAccentColor="False"/>
+
+		<!-- Additional Styles -->
+		<StyleInclude Source="avares://Avalonia.Controls.DataGrid/Themes/Fluent.xaml"/>
 	</Application.Styles>
 </Application>
