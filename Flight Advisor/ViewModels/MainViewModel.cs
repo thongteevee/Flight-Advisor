@@ -70,7 +70,7 @@ namespace FlightAdvisor.ViewModels
             LoadAircraftDatabase();
 
             // Setup auto-refresh (5 minutes)
-            //SetupAutoRefresh();
+            SetupAutoRefresh();
         }
 
         #region Properties
