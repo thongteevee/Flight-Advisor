@@ -146,19 +146,26 @@
 							<!-- Flight Type Selection -->
 							<StackPanel>
 								<TextBlock Classes="subheader" Text="Flight Type" Margin="0,0,0,12"/>
-								<ItemsControl ItemsSource="{Binding FlightTypes}">
-									<ItemsControl.ItemTemplate>
-										<DataTemplate>
-											<Button Command="{Binding $parent[Window].DataContext.SelectFlightTypeCommand}"
-												   CommandParameter="{Binding}"
-												   Classes="secondary"
-												   HorizontalAlignment="Stretch"
-												   Margin="0,4">
-												<TextBlock Text="{Binding}"/>
-											</Button>
-										</DataTemplate>
-									</ItemsControl.ItemTemplate>
-								</ItemsControl>
+
+								<Button Classes="secondary" HorizontalAlignment="Stretch" Margin="0,4" Click="FlightLesson_Click">
+									<TextBlock Text="Flight Lesson"/>
+								</Button>
+
+								<Button Classes="secondary" HorizontalAlignment="Stretch" Margin="0,4" Click="Gliding_Click">
+									<TextBlock Text="Gliding"/>
+								</Button>
+
+								<Button Classes="secondary" HorizontalAlignment="Stretch" Margin="0,4" Click="Recreational_Click">
+									<TextBlock Text="Recreational Flight"/>
+								</Button>
+
+								<Button Classes="secondary" HorizontalAlignment="Stretch" Margin="0,4" Click="Discovery_Click">
+									<TextBlock Text="Discovery Flight"/>
+								</Button>
+
+								<Button Classes="secondary" HorizontalAlignment="Stretch" Margin="0,4" Click="JustLooking_Click">
+									<TextBlock Text="Just Looking at Weather"/>
+								</Button>
 							</StackPanel>
 
 							<!-- Aircraft Selection -->
