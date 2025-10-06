@@ -47,7 +47,7 @@
 						</Style>
 					</Viewbox.Styles>
 
-					<TextBlock Text="✈️" FontSize="64"/>
+					<TextBlock Text="&#x2708;&#xFE0F;" FontSize="64"/>
 				</Viewbox>
 
 				<!-- App Name with Fade In -->
