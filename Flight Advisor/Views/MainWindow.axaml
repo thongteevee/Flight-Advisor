@@ -661,12 +661,13 @@
 			</Grid>
 		</Grid>
 		<Canvas HorizontalAlignment="Right"
-        VerticalAlignment="Bottom"
-        Margin="0,0,40,40">
+				VerticalAlignment="Bottom"
+				Margin="0,0,40,40">
 
 			<Border Width="56"
 					Height="56"
 					CornerRadius="28"
+					ClipToBounds="True"
 					BoxShadow="0 4 12 0 #000000">
 
 				<Button Click="ToggleTheme_Click"
