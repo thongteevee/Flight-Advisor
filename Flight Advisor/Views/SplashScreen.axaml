@@ -1,0 +1,176 @@
+<!-- Views/SplashScreen.axaml -->
+<!-- Optional: Add this for a beautiful startup animation -->
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        x:Class="FlightAdvisor.Views.SplashScreen"
+        Title="Flight Advisor"
+        Width="600"
+        Height="400"
+        WindowStartupLocation="CenterScreen"
+        SystemDecorations="None"
+        TransparencyLevelHint="AcrylicBlur"
+        Background="Transparent"
+        CanResize="False">
+
+	<Border CornerRadius="20" ClipToBounds="True">
+		<Border.Background>
+			<LinearGradientBrush StartPoint="0%,0%" EndPoint="100%,100%">
+				<GradientStop Color="#0a0e1a" Offset="0"/>
+				<GradientStop Color="#1e293b" Offset="1"/>
+			</LinearGradientBrush>
+		</Border.Background>
+
+		<Grid>
+			<!-- Animated Content -->
+			<StackPanel VerticalAlignment="Center" HorizontalAlignment="Center" Spacing="24">
+
+				<!-- Airplane Icon with Rotation Animation -->
+				<Viewbox Width="100" Height="100" Name="PlaneIcon">
+					<Viewbox.Styles>
+						<Style Selector="Viewbox#PlaneIcon">
+							<Style.Animations>
+								<Animation Duration="0:0:2" IterationCount="Infinite">
+									<KeyFrame Cue="0%">
+										<Setter Property="RotateTransform.Angle" Value="0"/>
+										<Setter Property="TranslateTransform.X" Value="-30"/>
+									</KeyFrame>
+									<KeyFrame Cue="50%">
+										<Setter Property="RotateTransform.Angle" Value="10"/>
+										<Setter Property="TranslateTransform.X" Value="30"/>
+									</KeyFrame>
+									<KeyFrame Cue="100%">
+										<Setter Property="RotateTransform.Angle" Value="0"/>
+										<Setter Property="TranslateTransform.X" Value="-30"/>
+									</KeyFrame>
+								</Animation>
+							</Style.Animations>
+						</Style>
+					</Viewbox.Styles>
+
+					<TextBlock Text="✈️" FontSize="64"/>
+				</Viewbox>
+
+				<!-- App Name with Fade In -->
+				<TextBlock Text="Flight Advisor"
+                          FontSize="36"
+                          FontWeight="Bold"
+                          Foreground="#e0e7ff"
+                          HorizontalAlignment="Center"
+                          Name="AppTitle">
+					<TextBlock.Styles>
+						<Style Selector="TextBlock#AppTitle">
+							<Style.Animations>
+								<Animation Duration="0:0:1" FillMode="Forward" Delay="0:0:0.3">
+									<KeyFrame Cue="0%">
+										<Setter Property="Opacity" Value="0"/>
+										<Setter Property="TranslateTransform.Y" Value="20"/>
+									</KeyFrame>
+									<KeyFrame Cue="100%">
+										<Setter Property="Opacity" Value="1"/>
+										<Setter Property="TranslateTransform.Y" Value="0"/>
+									</KeyFrame>
+								</Animation>
+							</Style.Animations>
+						</Style>
+					</TextBlock.Styles>
+				</TextBlock>
+
+				<!-- Tagline -->
+				<TextBlock Text="Should I Go Flying Today?"
+                          FontSize="18"
+                          Foreground="#94a3b8"
+                          HorizontalAlignment="Center"
+                          Name="Tagline">
+					<TextBlock.Styles>
+						<Style Selector="TextBlock#Tagline">
+							<Style.Animations>
+								<Animation Duration="0:0:1" FillMode="Forward" Delay="0:0:0.6">
+									<KeyFrame Cue="0%">
+										<Setter Property="Opacity" Value="0"/>
+									</KeyFrame>
+									<KeyFrame Cue="100%">
+										<Setter Property="Opacity" Value="1"/>
+									</KeyFrame>
+								</Animation>
+							</Style.Animations>
+						</Style>
+					</TextBlock.Styles>
+				</TextBlock>
+
+				<!-- Loading Indicator -->
+				<StackPanel Orientation="Horizontal"
+                           HorizontalAlignment="Center"
+                           Spacing="8"
+                           Margin="0,24,0,0"
+                           Name="LoadingDots">
+					<Ellipse Width="8" Height="8" Fill="#4f46e5" Name="Dot1">
+						<Ellipse.Styles>
+							<Style Selector="Ellipse#Dot1">
+								<Style.Animations>
+									<Animation Duration="0:0:1.2" IterationCount="Infinite">
+										<KeyFrame Cue="0%">
+											<Setter Property="Opacity" Value="0.3"/>
+										</KeyFrame>
+										<KeyFrame Cue="33%">
+											<Setter Property="Opacity" Value="1"/>
+										</KeyFrame>
+										<KeyFrame Cue="100%">
+											<Setter Property="Opacity" Value="0.3"/>
+										</KeyFrame>
+									</Animation>
+								</Style.Animations>
+							</Style>
+						</Ellipse.Styles>
+					</Ellipse>
+
+					<Ellipse Width="8" Height="8" Fill="#4f46e5" Name="Dot2">
+						<Ellipse.Styles>
+							<Style Selector="Ellipse#Dot2">
+								<Style.Animations>
+									<Animation Duration="0:0:1.2" IterationCount="Infinite" Delay="0:0:0.2">
+										<KeyFrame Cue="0%">
+											<Setter Property="Opacity" Value="0.3"/>
+										</KeyFrame>
+										<KeyFrame Cue="33%">
+											<Setter Property="Opacity" Value="1"/>
+										</KeyFrame>
+										<KeyFrame Cue="100%">
+											<Setter Property="Opacity" Value="0.3"/>
+										</KeyFrame>
+									</Animation>
+								</Style.Animations>
+							</Style>
+						</Ellipse.Styles>
+					</Ellipse>
+
+					<Ellipse Width="8" Height="8" Fill="#4f46e5" Name="Dot3">
+						<Ellipse.Styles>
+							<Style Selector="Ellipse#Dot3">
+								<Style.Animations>
+									<Animation Duration="0:0:1.2" IterationCount="Infinite" Delay="0:0:0.4">
+										<KeyFrame Cue="0%">
+											<Setter Property="Opacity" Value="0.3"/>
+										</KeyFrame>
+										<KeyFrame Cue="33%">
+											<Setter Property="Opacity" Value="1"/>
+										</KeyFrame>
+										<KeyFrame Cue="100%">
+											<Setter Property="Opacity" Value="0.3"/>
+										</KeyFrame>
+									</Animation>
+								</Style.Animations>
+							</Style>
+						</Ellipse.Styles>
+					</Ellipse>
+				</StackPanel>
+
+				<!-- Loading Text -->
+				<TextBlock Text="Loading weather services..."
+                          FontSize="14"
+                          Foreground="#64748b"
+                          HorizontalAlignment="Center"
+                          Margin="0,8,0,0"/>
+			</StackPanel>
+		</Grid>
+	</Border>
+</Window>
