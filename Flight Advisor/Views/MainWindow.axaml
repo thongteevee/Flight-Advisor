@@ -1,3 +1,4 @@
+<?xml version="1.0" encoding="utf-8"?>
 <Window xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:vm="using:FlightAdvisor.ViewModels"
@@ -149,10 +150,10 @@
 									<ItemsControl.ItemTemplate>
 										<DataTemplate>
 											<Button Command="{Binding $parent[Window].DataContext.SelectFlightTypeCommand}"
-                                                   CommandParameter="{Binding}"
-                                                   Classes="secondary"
-                                                   HorizontalAlignment="Stretch"
-                                                   Margin="0,4">
+												   CommandParameter="{Binding}"
+												   Classes="secondary"
+												   HorizontalAlignment="Stretch"
+												   Margin="0,4">
 												<TextBlock Text="{Binding}"/>
 											</Button>
 										</DataTemplate>
@@ -353,7 +354,7 @@
 											<!-- Temperature -->
 											<StackPanel Grid.Row="0" Grid.Column="0">
 												<TextBlock Classes="label" Text="TEMPERATURE"/>
-												<TextBlock Text="{Binding WeatherSummary.Temperature, StringFormat='{}{0}°C'}"
+												<TextBlock Text="{Binding WeatherSummary.Temperature, StringFormat='{}{0}�C'}"
 														  FontSize="24"
 														  FontWeight="SemiBold"
 														  Foreground="#e0e7ff"/>
@@ -363,7 +364,7 @@
 											<StackPanel Grid.Row="0" Grid.Column="1">
 												<TextBlock Classes="label" Text="WIND"/>
 												<TextBlock FontSize="20" Foreground="#e0e7ff">
-													<Run Text="{Binding WeatherSummary.WindDirection, StringFormat='{}{0}°'}"/>
+													<Run Text="{Binding WeatherSummary.WindDirection, StringFormat='{}{0}�'}"/>
 													<Run Text=" at "/>
 													<Run Text="{Binding WeatherSummary.WindSpeed, StringFormat='{}{0}kts'}"/>
 												</TextBlock>
@@ -422,7 +423,7 @@
 												   Margin="0,8">
 												<StackPanel Spacing="8">
 													<StackPanel Orientation="Horizontal" Spacing="8">
-														<TextBlock Text="⚠️" FontSize="16"/>
+														<TextBlock Text="&#x26A0;&#xFE0F;" FontSize="16"/>
 														<TextBlock Text="{Binding Type}"
 																  FontWeight="SemiBold"
 																  FontSize="16"
@@ -447,13 +448,13 @@
 								<Border Background="#1e293b" CornerRadius="10" Padding="20"
 									   IsVisible="{Binding CurrentDecision.Recommendations.Count, Converter={StaticResource CountToBoolConverter}}">
 									<StackPanel Spacing="12">
-										<TextBlock Text="📋 Recommendations"
+										<TextBlock Text="&#x1F4CB; Recommendations"
 												  Classes="subheader"/>
 										<ItemsControl ItemsSource="{Binding CurrentDecision.Recommendations}">
 											<ItemsControl.ItemTemplate>
 												<DataTemplate>
 													<StackPanel Orientation="Horizontal" Spacing="8" Margin="0,4">
-														<TextBlock Text="•" Foreground="#94a3b8"/>
+														<TextBlock Text="�" Foreground="#94a3b8"/>
 														<TextBlock Text="{Binding}"
 																  Foreground="#c7d2fe"
 																  TextWrapping="Wrap"/>
@@ -517,7 +518,7 @@
 								   Spacing="16"
 								   IsVisible="{Binding !ShowResults}"
 								   Opacity="0.5">
-							<TextBlock Text="✈️"
+							<TextBlock Text="&#x2708;�"
 									  FontSize="64"
 									  HorizontalAlignment="Center"/>
 							<TextBlock Text="Enter flight details and check weather"
