@@ -6,7 +6,7 @@ using System.Text.Json.Serialization;
 namespace FlightAdvisor.Models
 {
     /// <summary>
-    /// METAR Weather Data Model
+    /// METAR Weather Data Model - ALL fields nullable to handle API variations
     /// </summary>
     public class MetarData
     {
@@ -29,7 +29,7 @@ namespace FlightAdvisor.Models
         [JsonIgnore]
         public DateTime ObservationTime => ObservationTimeUnix.HasValue
             ? DateTimeOffset.FromUnixTimeSeconds(ObservationTimeUnix.Value).DateTime
-            : ReportTime ?? DateTime.MinValue;
+            : (ReportTime ?? DateTime.MinValue);
 
         [JsonPropertyName("temp")]
         public double? Temperature { get; set; }
@@ -110,7 +110,7 @@ namespace FlightAdvisor.Models
         public double? Longitude { get; set; }
 
         [JsonPropertyName("elev")]
-        public int Elevation { get; set; }
+        public int? Elevation { get; set; }
 
         [JsonPropertyName("prior")]
         public int? Prior { get; set; }
