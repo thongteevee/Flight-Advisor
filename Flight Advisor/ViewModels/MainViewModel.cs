@@ -47,9 +47,6 @@ namespace FlightAdvisor.ViewModels
             _weatherService = new WeatherService();
             _decisionEngine = new DecisionEngine(_weatherService);
 
-            // Load aircraft database
-            LoadAircraftDatabase();
-
             // Setup commands
             CheckWeatherCommand = ReactiveCommand.CreateFromTask(CheckWeatherAsync);
             SelectFlightTypeCommand = ReactiveCommand.Create<string>(SelectFlightType);
@@ -68,8 +65,12 @@ namespace FlightAdvisor.ViewModels
 
             Runways = new ObservableCollection<string>();
 
+
+            // Load aircraft database
+            LoadAircraftDatabase();
+
             // Setup auto-refresh (5 minutes)
-            SetupAutoRefresh();
+            //SetupAutoRefresh();
         }
 
         #region Properties
@@ -222,7 +223,7 @@ namespace FlightAdvisor.ViewModels
 
         private void SelectFlightType(string flightType)
         {
-            SelectedFlightType = flightType;
+            Avalonia.Threading.Dispatcher.UIThread.Post(() => SelectedFlightType = flightType);
         }
 
         private void ToggleAdvancedMode()
