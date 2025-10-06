@@ -3,6 +3,7 @@ using Avalonia.Controls;
 using Avalonia.Controls.Notifications;
 using FlightAdvisor.ViewModels;
 using System;
+using System.Reactive.Linq;
 
 namespace FlightAdvisor.Views
 {
@@ -75,5 +76,19 @@ namespace FlightAdvisor.Views
             if (DataContext is MainViewModel vm)
                 vm.SelectedFlightType = "Just Looking at Weather";
         }
+
+        private async void CheckWeather_Click(object sender, Avalonia.Interactivity.RoutedEventArgs e)
+        {
+            if (DataContext is MainViewModel vm)
+            {
+                await vm.CheckWeatherCommand.Execute();
+            }
+        }
+
+        private void ToggleAdvanced_Click(object sender, Avalonia.Interactivity.RoutedEventArgs e)
+{
+    if (DataContext is MainViewModel vm)
+        vm.ShowAdvancedMode = !vm.ShowAdvancedMode;
+}
     }
 }
