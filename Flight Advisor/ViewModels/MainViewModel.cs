@@ -41,6 +41,9 @@ namespace FlightAdvisor.ViewModels
         private bool _showFlightDetails;
         private bool _isDarkMode;
 
+        private int? _headwindComponent;
+        private int? _crosswindComponent;
+
         public MainViewModel()
         {
             _weatherService = new WeatherService();
@@ -155,7 +158,44 @@ namespace FlightAdvisor.ViewModels
         public string SelectedRunway
         {
             get => _selectedRunway;
-            set => this.RaiseAndSetIfChanged(ref _selectedRunway, value);
+            set
+            {
+                this.RaiseAndSetIfChanged(ref _selectedRunway, value);
+                RecalculateWindComponents();
+            }
+        }
+
+        private void RecalculateWindComponents()
+        {
+            if (WeatherSummary == null ||
+                !WeatherSummary.WindDirection.HasValue ||
+                !WeatherSummary.WindSpeed.HasValue ||
+                string.IsNullOrEmpty(SelectedRunway))
+            {
+                HeadwindComponent = null;
+                CrosswindComponent = null;
+                return;
+            }
+
+            var runwayHeading = ParseRunwayHeading(SelectedRunway);
+
+            HeadwindComponent = _weatherService.CalculateHeadwind(
+                WeatherSummary.WindDirection.Value,
+                WeatherSummary.WindSpeed.Value,
+                runwayHeading);
+
+            CrosswindComponent = _weatherService.CalculateCrosswind(
+                WeatherSummary.WindDirection.Value,
+                WeatherSummary.WindSpeed.Value,
+                runwayHeading);
+        }
+
+        private int ParseRunwayHeading(string runway)
+        {
+            var numericPart = new string(runway.TakeWhile(char.IsDigit).ToArray());
+            if (int.TryParse(numericPart, out var heading))
+                return heading * 10;
+            return 0;
         }
 
         public FlightDecision CurrentDecision
@@ -478,6 +518,18 @@ namespace FlightAdvisor.ViewModels
                 app.ToggleTheme();
                 IsDarkMode = app.IsDarkMode;
             }
+        }
+
+        public int? HeadwindComponent
+        {
+            get => _headwindComponent;
+            set => this.RaiseAndSetIfChanged(ref _headwindComponent, value);
+        }
+
+        public int? CrosswindComponent
+        {
+            get => _crosswindComponent;
+            set => this.RaiseAndSetIfChanged(ref _crosswindComponent, value);
         }
 
         #endregion
