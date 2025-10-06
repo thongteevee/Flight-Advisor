@@ -1,4 +1,4 @@
-// ViewModels/MainViewModel.cs - WITH RUNWAY SELECTION
+// ViewModels/MainViewModel.cs
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -15,11 +15,13 @@ namespace FlightAdvisor.ViewModels
 {
     public class MainViewModel : ReactiveObject
     {
+        #region Fields
+
         private readonly WeatherService _weatherService;
         private readonly DecisionEngine _decisionEngine;
         private AircraftDatabase _aircraftDatabase;
 
-        // Observable Properties
+        // Observable backing fields
         private string _selectedFlightType;
         private Aircraft _selectedAircraft;
         private string _departureIcao;
@@ -40,26 +42,29 @@ namespace FlightAdvisor.ViewModels
         private string _lastUpdateTime;
         private bool _showFlightDetails;
         private bool _isDarkMode;
-
         private int? _headwindComponent;
         private int? _crosswindComponent;
+
+        #endregion
+
+        #region Constructor
 
         public MainViewModel()
         {
             _weatherService = new WeatherService();
             _decisionEngine = new DecisionEngine(_weatherService);
 
-            // Initialize IsDarkMode based on the actual app theme
+            // Initialize theme based on current app theme
             if (Avalonia.Application.Current is App app)
             {
                 _isDarkMode = app.IsDarkMode;
             }
             else
             {
-                _isDarkMode = true;
+                _isDarkMode = true; // Default to dark mode
             }
 
-            // Setup commands
+            // Initialize commands
             CheckWeatherCommand = ReactiveCommand.CreateFromTask(CheckWeatherAsync);
             SelectFlightTypeCommand = ReactiveCommand.Create<string>(SelectFlightType);
             ToggleAdvancedModeCommand = ReactiveCommand.Create(ToggleAdvancedMode);
@@ -79,9 +84,15 @@ namespace FlightAdvisor.ViewModels
             DepartureRunways = new ObservableCollection<string>();
             ArrivalRunways = new ObservableCollection<string>();
 
+            // Set default values
             ShowFlightDetails = false;
+            SelectedFlightType = FlightTypes.First();
+
+            // Load aircraft database
             LoadAircraftDatabase();
         }
+
+        #endregion
 
         #region Properties
 
@@ -103,8 +114,12 @@ namespace FlightAdvisor.ViewModels
             set
             {
                 this.RaiseAndSetIfChanged(ref _departureIcao, value?.ToUpper());
+
+                // Auto-load runways when ICAO code is complete (4 characters)
                 if (!string.IsNullOrEmpty(value) && value.Length == 4)
+                {
                     _ = LoadDepartureRunwaysAsync(value);
+                }
             }
         }
 
@@ -114,8 +129,12 @@ namespace FlightAdvisor.ViewModels
             set
             {
                 this.RaiseAndSetIfChanged(ref _arrivalIcao, value?.ToUpper());
+
+                // Auto-load runways when ICAO code is complete (4 characters)
                 if (!string.IsNullOrEmpty(value) && value.Length == 4)
+                {
                     _ = LoadArrivalRunwaysAsync(value);
+                }
             }
         }
 
@@ -161,41 +180,21 @@ namespace FlightAdvisor.ViewModels
             set
             {
                 this.RaiseAndSetIfChanged(ref _selectedRunway, value);
+                // Automatically recalculate wind components when runway changes
                 RecalculateWindComponents();
             }
         }
 
-        private void RecalculateWindComponents()
+        public int? HeadwindComponent
         {
-            if (WeatherSummary == null ||
-                !WeatherSummary.WindDirection.HasValue ||
-                !WeatherSummary.WindSpeed.HasValue ||
-                string.IsNullOrEmpty(SelectedRunway))
-            {
-                HeadwindComponent = null;
-                CrosswindComponent = null;
-                return;
-            }
-
-            var runwayHeading = ParseRunwayHeading(SelectedRunway);
-
-            HeadwindComponent = _weatherService.CalculateHeadwind(
-                WeatherSummary.WindDirection.Value,
-                WeatherSummary.WindSpeed.Value,
-                runwayHeading);
-
-            CrosswindComponent = _weatherService.CalculateCrosswind(
-                WeatherSummary.WindDirection.Value,
-                WeatherSummary.WindSpeed.Value,
-                runwayHeading);
+            get => _headwindComponent;
+            set => this.RaiseAndSetIfChanged(ref _headwindComponent, value);
         }
 
-        private int ParseRunwayHeading(string runway)
+        public int? CrosswindComponent
         {
-            var numericPart = new string(runway.TakeWhile(char.IsDigit).ToArray());
-            if (int.TryParse(numericPart, out var heading))
-                return heading * 10;
-            return 0;
+            get => _crosswindComponent;
+            set => this.RaiseAndSetIfChanged(ref _crosswindComponent, value);
         }
 
         public FlightDecision CurrentDecision
@@ -252,6 +251,7 @@ namespace FlightAdvisor.ViewModels
             set => this.RaiseAndSetIfChanged(ref _isDarkMode, value);
         }
 
+        // Collections
         public ObservableCollection<string> FlightTypes { get; }
         public ObservableCollection<Aircraft> AllAircraft { get; private set; }
         public ObservableCollection<string> DepartureRunways { get; }
@@ -269,77 +269,153 @@ namespace FlightAdvisor.ViewModels
 
         #endregion
 
-        #region Methods
+        #region Private Methods
 
+        /// <summary>
+        /// Load aircraft database from JSON file
+        /// </summary>
         private void LoadAircraftDatabase()
         {
             try
             {
                 var jsonPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Assets", "Data", "aircraft.json");
+
+                if (!File.Exists(jsonPath))
+                {
+                    ErrorMessage = "Aircraft database file not found.";
+                    AllAircraft = new ObservableCollection<Aircraft>();
+                    return;
+                }
+
                 var json = File.ReadAllText(jsonPath);
                 _aircraftDatabase = JsonSerializer.Deserialize<AircraftDatabase>(json);
-                AllAircraft = new ObservableCollection<Aircraft>(_aircraftDatabase.GetAllAircraft());
+
+                if (_aircraftDatabase != null)
+                {
+                    AllAircraft = new ObservableCollection<Aircraft>(_aircraftDatabase.GetAllAircraft());
+
+                    // Auto-select first aircraft if available
+                    if (AllAircraft.Any())
+                    {
+                        SelectedAircraft = AllAircraft.First();
+                    }
+                }
+                else
+                {
+                    AllAircraft = new ObservableCollection<Aircraft>();
+                }
             }
             catch (Exception ex)
             {
                 ErrorMessage = $"Failed to load aircraft database: {ex.Message}";
+                AllAircraft = new ObservableCollection<Aircraft>();
             }
         }
 
+        /// <summary>
+        /// Select flight type from UI
+        /// </summary>
         private void SelectFlightType(string flightType)
         {
-            Avalonia.Threading.Dispatcher.UIThread.Post(() => SelectedFlightType = flightType);
+            Avalonia.Threading.Dispatcher.UIThread.Post(() =>
+            {
+                SelectedFlightType = flightType;
+            });
         }
 
+        /// <summary>
+        /// Toggle advanced mode visibility
+        /// </summary>
         private void ToggleAdvancedMode()
         {
             ShowAdvancedMode = !ShowAdvancedMode;
         }
 
+        /// <summary>
+        /// Toggle application theme
+        /// </summary>
+        private void ToggleTheme()
+        {
+            if (Avalonia.Application.Current is App app)
+            {
+                app.ToggleTheme();
+                IsDarkMode = app.IsDarkMode;
+            }
+        }
+
+        /// <summary>
+        /// Load departure runways for specified airport
+        /// </summary>
         private async Task LoadDepartureRunwaysAsync(string icao)
         {
             try
             {
                 var runways = await FetchRunwayDataAsync(icao);
+
                 DepartureRunways.Clear();
 
-                foreach (var runway in runways)
+                if (runways.Any())
                 {
-                    DepartureRunways.Add(runway.DisplayName);
-                }
+                    foreach (var runway in runways)
+                    {
+                        DepartureRunways.Add(runway.DisplayName);
+                    }
 
-                // Auto-select best runway if we have wind data
-                if (DepartureRunways.Any())
+                    // Auto-select first runway
+                    if (DepartureRunways.Any())
+                    {
+                        SelectedRunway = DepartureRunways.First();
+                    }
+                }
+                else
                 {
-                    SelectedRunway = DepartureRunways.First();
+                    DepartureRunways.Add("Auto-Selected");
+                    SelectedRunway = "Auto-Selected";
                 }
             }
             catch
             {
+                // On error, provide auto-select option
                 DepartureRunways.Clear();
                 DepartureRunways.Add("Auto-Selected");
+                SelectedRunway = "Auto-Selected";
             }
         }
 
+        /// <summary>
+        /// Load arrival runways for specified airport
+        /// </summary>
         private async Task LoadArrivalRunwaysAsync(string icao)
         {
             try
             {
                 var runways = await FetchRunwayDataAsync(icao);
+
                 ArrivalRunways.Clear();
 
-                foreach (var runway in runways)
+                if (runways.Any())
                 {
-                    ArrivalRunways.Add(runway.DisplayName);
+                    foreach (var runway in runways)
+                    {
+                        ArrivalRunways.Add(runway.DisplayName);
+                    }
+                }
+                else
+                {
+                    ArrivalRunways.Add("Auto-Selected");
                 }
             }
             catch
             {
+                // On error, provide auto-select option
                 ArrivalRunways.Clear();
                 ArrivalRunways.Add("Auto-Selected");
             }
         }
 
+        /// <summary>
+        /// Fetch runway data from NOAA Aviation Weather API
+        /// </summary>
         private async Task<List<RunwayData>> FetchRunwayDataAsync(string icao)
         {
             string url = $"https://aviationweather.gov/api/data/airport?ids={icao}&format=json";
@@ -391,12 +467,15 @@ namespace FlightAdvisor.ViewModels
             return runwayList;
         }
 
+        /// <summary>
+        /// Select best runway based on wind conditions (most headwind)
+        /// </summary>
         private string SelectBestRunway(List<RunwayData> runways, int windDirection, int windSpeed)
         {
             if (!runways.Any() || windSpeed == 0)
                 return runways.FirstOrDefault()?.DisplayName ?? "Auto-Selected";
 
-            // Calculate headwind component for each runway
+            // Calculate headwind component for each runway and select best
             var bestRunway = runways
                 .Select(r => new
                 {
@@ -409,6 +488,9 @@ namespace FlightAdvisor.ViewModels
             return bestRunway?.Runway.DisplayName ?? runways.First().DisplayName;
         }
 
+        /// <summary>
+        /// Calculate headwind component for runway selection
+        /// </summary>
         private int CalculateHeadwindComponent(int windDirection, int windSpeed, int runwayHeading)
         {
             var angleDiff = Math.Abs(windDirection - runwayHeading);
@@ -419,6 +501,54 @@ namespace FlightAdvisor.ViewModels
             return (int)Math.Round(headwind);
         }
 
+        /// <summary>
+        /// Recalculate wind components when runway selection changes
+        /// </summary>
+        private void RecalculateWindComponents()
+        {
+            if (WeatherSummary == null ||
+                !WeatherSummary.WindDirection.HasValue ||
+                !WeatherSummary.WindSpeed.HasValue ||
+                string.IsNullOrEmpty(SelectedRunway) ||
+                SelectedRunway == "Auto-Selected")
+            {
+                HeadwindComponent = null;
+                CrosswindComponent = null;
+                return;
+            }
+
+            var runwayHeading = ParseRunwayHeading(SelectedRunway);
+
+            HeadwindComponent = _weatherService.CalculateHeadwind(
+                WeatherSummary.WindDirection.Value,
+                WeatherSummary.WindSpeed.Value,
+                runwayHeading);
+
+            CrosswindComponent = _weatherService.CalculateCrosswind(
+                WeatherSummary.WindDirection.Value,
+                WeatherSummary.WindSpeed.Value,
+                runwayHeading);
+        }
+
+        /// <summary>
+        /// Parse runway heading from runway designator (e.g., "09" -> 090°)
+        /// </summary>
+        private int ParseRunwayHeading(string runway)
+        {
+            // Extract numeric part from runway designator (e.g., "09L" -> "09")
+            var numericPart = new string(runway.TakeWhile(char.IsDigit).ToArray());
+
+            if (int.TryParse(numericPart, out var heading))
+            {
+                return heading * 10; // Convert to degrees (09 -> 090°)
+            }
+
+            return 0;
+        }
+
+        /// <summary>
+        /// Main weather check operation
+        /// </summary>
         private async Task CheckWeatherAsync()
         {
             IsLoading = true;
@@ -427,12 +557,14 @@ namespace FlightAdvisor.ViewModels
 
             try
             {
+                // Validate input
                 if (string.IsNullOrEmpty(DepartureIcao))
                 {
                     ErrorMessage = "Please enter a departure airport code.";
                     return;
                 }
 
+                // Fetch METAR data
                 var metar = await _weatherService.GetMetarAsync(DepartureIcao);
 
                 if (metar == null)
@@ -441,7 +573,7 @@ namespace FlightAdvisor.ViewModels
                     return;
                 }
 
-                // Load runways and auto-select best one
+                // Load runways and auto-select best one based on wind
                 var runways = await FetchRunwayDataAsync(DepartureIcao);
                 if (runways.Any() && metar.WindDirection.HasValue && metar.WindSpeed.HasValue)
                 {
@@ -455,6 +587,7 @@ namespace FlightAdvisor.ViewModels
                     SelectedRunway = SelectBestRunway(runways, metar.WindDirection.Value, metar.WindSpeed.Value);
                 }
 
+                // Fetch TAF data (optional)
                 TafData taf = null;
                 try
                 {
@@ -462,9 +595,10 @@ namespace FlightAdvisor.ViewModels
                 }
                 catch
                 {
-                    // TAF is optional
+                    // TAF is optional - continue without it
                 }
 
+                // Build flight information object
                 var flightInfo = new FlightInfo
                 {
                     FlightType = SelectedFlightType,
@@ -480,14 +614,22 @@ namespace FlightAdvisor.ViewModels
                     SelectedRunway = SelectedRunway
                 };
 
+                // Evaluate flight decision
                 CurrentDecision = _decisionEngine.EvaluateFlight(metar, taf, flightInfo);
                 WeatherSummary = CurrentDecision.WeatherSummary;
 
+                // Add TAF to weather summary if available
                 if (taf != null)
+                {
                     WeatherSummary.RawTaf = taf.RawTaf;
+                }
 
+                // Update display
                 LastUpdateTime = DateTime.Now.ToString("HH:mm:ss");
                 ShowResults = true;
+
+                // Recalculate wind components for selected runway
+                RecalculateWindComponents();
             }
             catch (WeatherServiceException ex)
             {
@@ -503,6 +645,9 @@ namespace FlightAdvisor.ViewModels
             }
         }
 
+        /// <summary>
+        /// Refresh weather data
+        /// </summary>
         private async Task RefreshWeatherAsync()
         {
             if (!string.IsNullOrEmpty(DepartureIcao))
@@ -511,31 +656,14 @@ namespace FlightAdvisor.ViewModels
             }
         }
 
-        private void ToggleTheme()
-        {
-            if (Avalonia.Application.Current is App app)
-            {
-                app.ToggleTheme();
-                IsDarkMode = app.IsDarkMode;
-            }
-        }
-
-        public int? HeadwindComponent
-        {
-            get => _headwindComponent;
-            set => this.RaiseAndSetIfChanged(ref _headwindComponent, value);
-        }
-
-        public int? CrosswindComponent
-        {
-            get => _crosswindComponent;
-            set => this.RaiseAndSetIfChanged(ref _crosswindComponent, value);
-        }
-
         #endregion
     }
 
-    // Helper class for runway data
+    #region Helper Classes
+
+    /// <summary>
+    /// Runway data structure with heading and display information
+    /// </summary>
     public class RunwayData
     {
         public string Designator { get; set; }
@@ -543,4 +671,6 @@ namespace FlightAdvisor.ViewModels
         public string DisplayName { get; set; }
         public double Reciprocal => (TrueHeading + 180) % 360;
     }
+
+    #endregion
 }

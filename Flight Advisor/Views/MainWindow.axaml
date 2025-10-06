@@ -395,7 +395,6 @@
 				</Grid>
 			</Border>
 
-				<!-- RIGHT PANEL - See Part 4 -->
 			<!-- Right Panel - Results -->
 				<Border Grid.Column="1"
                        Margin="24,0,0,0"
@@ -456,6 +455,7 @@
 												  TextWrapping="Wrap"/>
 									</StackPanel>
 								</Border>
+								
 
 								<!-- Weather Summary -->
 								<Border Background="{DynamicResource AppSurface2}"
@@ -475,7 +475,7 @@
 										<Grid ColumnDefinitions="*,*,*" RowDefinitions="Auto,Auto" ColumnSpacing="20" RowSpacing="12">
 											<StackPanel Grid.Row="0" Grid.Column="0">
 												<TextBlock Classes="label" Text="TEMPERATURE"/>
-												<TextBlock Text="{Binding WeatherSummary.Temperature, StringFormat='{}{0:F1}°C'}"
+												<TextBlock Text="{Binding WeatherSummary.Temperature, StringFormat='{}{0:F1}?C'}"
 														  FontSize="24"
 														  FontWeight="SemiBold"
 														  Foreground="{DynamicResource AppText}"/>
@@ -484,7 +484,7 @@
 											<StackPanel Grid.Row="0" Grid.Column="1">
 												<TextBlock Classes="label" Text="WIND"/>
 												<TextBlock FontSize="20" Foreground="{DynamicResource AppText}">
-													<Run Text="{Binding WeatherSummary.WindDirection, StringFormat='{}{0}°'}"/>
+													<Run Text="{Binding WeatherSummary.WindDirection, StringFormat='{}{0}?'}"/>
 													<Run Text=" at "/>
 													<Run Text="{Binding WeatherSummary.WindSpeed, StringFormat='{}{0}kts'}"/>
 												</TextBlock>
@@ -525,53 +525,6 @@
 												  HorizontalAlignment="Right"/>
 									</StackPanel>
 								</Border>
-
-								<Border Background="{DynamicResource AppSurface2}"
-       CornerRadius="10"
-       Padding="20"
-       IsVisible="{Binding DepartureRunways.Count, Converter={StaticResource CountToBoolConverter}}">
-									<StackPanel Spacing="16">
-										<TextBlock Text="Runway Analysis"
-												  Classes="subheader"/>
-
-										<StackPanel Spacing="8">
-											<TextBlock Text="Select Runway"
-													  Classes="label"/>
-											<ComboBox ItemsSource="{Binding DepartureRunways}"
-													 SelectedItem="{Binding SelectedRunway}"
-													 HorizontalAlignment="Stretch"
-													 Background="{DynamicResource AppSurface}"
-													 Foreground="{DynamicResource AppText}"
-													 BorderBrush="{DynamicResource AppBorder}"
-													 Padding="12"
-													 Height="44"/>
-										</StackPanel>
-
-										<Grid ColumnDefinitions="*,*" ColumnSpacing="16">
-											<StackPanel Grid.Column="0">
-												<TextBlock Classes="label" Text="HEADWIND"/>
-												<TextBlock Text="{Binding HeadwindComponent, StringFormat='{}{0}kts'}"
-														  FontSize="20"
-														  FontWeight="SemiBold"
-														  Foreground="#22c55e"/>
-											</StackPanel>
-
-											<StackPanel Grid.Column="1">
-												<TextBlock Classes="label" Text="CROSSWIND"/>
-												<TextBlock Text="{Binding CrosswindComponent, StringFormat='{}{0}kts'}"
-														  FontSize="20"
-														  FontWeight="SemiBold"
-														  Foreground="#f59e0b"/>
-											</StackPanel>
-										</Grid>
-
-										<TextBlock Text="Wind components update automatically when runway changes"
-												  FontSize="11"
-												  Foreground="{DynamicResource AppTextQuaternary}"
-												  HorizontalAlignment="Center"/>
-									</StackPanel>
-								</Border>
-
 
 								<Border Background="{DynamicResource AppSurface2}"
 									   CornerRadius="10"
@@ -661,7 +614,7 @@
 											<ItemsControl.ItemTemplate>
 												<DataTemplate>
 													<StackPanel Orientation="Horizontal" Spacing="8" Margin="0,4">
-														<TextBlock Text="•" Foreground="{DynamicResource AppTextTertiary}"/>
+														<TextBlock Text="?" Foreground="{DynamicResource AppTextTertiary}"/>
 														<TextBlock Text="{Binding}"
 																  Foreground="{DynamicResource AppTextSecondary}"
 																  TextWrapping="Wrap"/>
