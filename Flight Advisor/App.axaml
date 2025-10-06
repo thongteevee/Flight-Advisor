@@ -16,6 +16,25 @@
 		<conv:BoolToChevronConverter x:Key="BoolToChevronConverter"/>
 		<conv:BoolToThemeIconConverter x:Key="BoolToThemeIconConverter"/>
 		<conv:BoolToThemeTextConverter x:Key="BoolToThemeTextConverter"/>
+
+		<!-- Dynamic Color Resources -->
+		<!-- Dark Theme Colors -->
+		<Color x:Key="DarkBackground">#0a0e1a</Color>
+		<Color x:Key="DarkBackground2">#1e293b</Color>
+		<Color x:Key="DarkSurface">#0f172a</Color>
+		<Color x:Key="DarkBorder">#334155</Color>
+		<Color x:Key="DarkText">#e0e7ff</Color>
+		<Color x:Key="DarkTextSecondary">#c7d2fe</Color>
+		<Color x:Key="DarkTextTertiary">#94a3b8</Color>
+
+		<!-- Light Theme Colors -->
+		<Color x:Key="LightBackground">#f8fafc</Color>
+		<Color x:Key="LightBackground2">#e2e8f0</Color>
+		<Color x:Key="LightSurface">#ffffff</Color>
+		<Color x:Key="LightBorder">#cbd5e1</Color>
+		<Color x:Key="LightText">#0f172a</Color>
+		<Color x:Key="LightTextSecondary">#334155</Color>
+		<Color x:Key="LightTextTertiary">#64748b</Color>
 	</Application.Resources>
 
 	<Application.Styles>
@@ -25,5 +44,14 @@
 
 		<!-- Additional Styles -->
 		<StyleInclude Source="avares://Avalonia.Controls.DataGrid/Themes/Fluent.xaml"/>
+
+		<!-- Dynamic Theme Styles -->
+		<Style Selector="Window">
+			<Setter Property="Background" Value="{DynamicResource DarkBackground}"/>
+		</Style>
+
+		<Style Selector="Window[RequestedThemeVariant=Light]">
+			<Setter Property="Background" Value="{DynamicResource LightBackground}"/>
+		</Style>
 	</Application.Styles>
 </Application>
