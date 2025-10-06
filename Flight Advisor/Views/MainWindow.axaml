@@ -2,6 +2,7 @@
 <Window xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:vm="using:FlightAdvisor.ViewModels"
+        xmlns:converters="using:FlightAdvisor.Converters"
         xmlns:ui="using:FluentAvalonia.UI.Controls"
         x:Class="FlightAdvisor.Views.MainWindow"
         x:DataType="vm:MainViewModel"
@@ -12,6 +13,10 @@
         WindowStartupLocation="CenterScreen"
         Background="#0a0e1a"
         TransparencyLevelHint="AcrylicBlur">
+
+	<Window.Resources>
+		<converters:BoolToChevronConverter x:Key="BoolToChevronConverter"/>
+	</Window.Resources>
 
 	<Window.Styles>
 		<!-- Garmin-Style Color Palette -->
@@ -132,9 +137,6 @@
 				<Grid.ColumnDefinitions>
 					<ColumnDefinition Width="400"/>
 					<ColumnDefinition Width="*"/>
-					<!--<ColumnDefinition Width="450" MinWidth="350" MaxWidth="600"/>
-					<ColumnDefinition Width="Auto"/>
-					<ColumnDefinition Width="*"/>-->
 				</Grid.ColumnDefinitions>
 
 				<!-- Left Panel - Input -->
@@ -146,38 +148,41 @@
 
 					<ScrollViewer>
 						<StackPanel Spacing="20">
+
 							<!-- Flight Type Selection -->
-							<StackPanel>
-								<TextBlock Classes="subheader" Text="Flight Type" Margin="0,0,0,12"/>
+							<StackPanel Spacing="12">
+								<TextBlock Text="Flight Type"
+								           FontSize="14"
+								           FontWeight="SemiBold"
+								           Foreground="#e2e8f0"/>
 
-								<Button Classes="secondary" HorizontalAlignment="Stretch" Margin="0,4" Click="FlightLesson_Click">
-									<TextBlock Text="Flight Lesson"/>
-								</Button>
-
-								<Button Classes="secondary" HorizontalAlignment="Stretch" Margin="0,4" Click="Gliding_Click">
-									<TextBlock Text="Gliding"/>
-								</Button>
-
-								<Button Classes="secondary" HorizontalAlignment="Stretch" Margin="0,4" Click="Recreational_Click">
-									<TextBlock Text="Recreational Flight"/>
-								</Button>
-
-								<Button Classes="secondary" HorizontalAlignment="Stretch" Margin="0,4" Click="Discovery_Click">
-									<TextBlock Text="Discovery Flight"/>
-								</Button>
-
-								<Button Classes="secondary" HorizontalAlignment="Stretch" Margin="0,4" Click="JustLooking_Click">
-									<TextBlock Text="Just Looking at Weather"/>
-								</Button>
+								<ComboBox ItemsSource="{Binding FlightTypes}"
+								          SelectedItem="{Binding SelectedFlightType}"
+								          PlaceholderText="Select flight type"
+								          HorizontalAlignment="Stretch"
+								          Background="#1e293b"
+								          Foreground="#e2e8f0"
+								          BorderBrush="#334155"
+								          Padding="12"
+								          Height="44"/>
 							</StackPanel>
 
 							<!-- Aircraft Selection -->
-							<StackPanel IsVisible="{Binding SelectedFlightType, Converter={x:Static ObjectConverters.IsNotNull}}">
-								<TextBlock Classes="label" Text="AIRCRAFT"/>
+							<StackPanel Spacing="12">
+								<TextBlock Text="Aircraft"
+								           FontSize="14"
+								           FontWeight="SemiBold"
+								           Foreground="#e2e8f0"/>
+
 								<ComboBox ItemsSource="{Binding AllAircraft}"
-                                         SelectedItem="{Binding SelectedAircraft}"
-                                         Classes="modern"
-                                         HorizontalAlignment="Stretch">
+								          SelectedItem="{Binding SelectedAircraft}"
+								          PlaceholderText="Select aircraft"
+								          HorizontalAlignment="Stretch"
+								          Background="#1e293b"
+								          Foreground="#e2e8f0"
+								          BorderBrush="#334155"
+								          Padding="12"
+								          Height="44">
 									<ComboBox.ItemTemplate>
 										<DataTemplate>
 											<TextBlock Text="{Binding Name}"/>
@@ -186,238 +191,205 @@
 								</ComboBox>
 							</StackPanel>
 
-							<!-- Airport Inputs -->
-							<StackPanel Spacing="16" IsVisible="{Binding SelectedFlightType, Converter={x:Static ObjectConverters.IsNotNull}}">
-								<StackPanel>
-									<TextBlock Classes="label" Text="DEPARTURE AIRPORT (ICAO)"/>
+							<!-- Airport Codes -->
+							<Grid ColumnDefinitions="*,*,*" ColumnSpacing="16">
+								<!-- Departure ICAO -->
+								<StackPanel Grid.Column="0" Spacing="8">
+									<TextBlock Text="Departure ICAO"
+									           FontSize="13"
+									           Foreground="#94a3b8"/>
 									<TextBox Text="{Binding DepartureIcao}"
-                                            Classes="modern"
-                                            Watermark="e.g., KSFO"
-                                            MaxLength="4"/>
+									         Watermark="KJFK"
+									         MaxLength="4"
+									         Background="#1e293b"
+									         Foreground="#e2e8f0"
+									         BorderBrush="#334155"
+									         Padding="12"
+									         Height="44"
+									         FontSize="14"
+									         VerticalContentAlignment="Center"/>
 								</StackPanel>
 
-								<StackPanel>
-									<TextBlock Classes="label" Text="ARRIVAL AIRPORT (ICAO)"/>
+								<!-- Arrival ICAO -->
+								<StackPanel Grid.Column="1" Spacing="8">
+									<TextBlock Text="Arrival ICAO (Optional)"
+									           FontSize="13"
+									           Foreground="#94a3b8"/>
 									<TextBox Text="{Binding ArrivalIcao}"
-                                            Classes="modern"
-                                            Watermark="e.g., KLAX"
-                                            MaxLength="4"/>
+									         Watermark="KEWR"
+									         MaxLength="4"
+									         Background="#1e293b"
+									         Foreground="#e2e8f0"
+									         BorderBrush="#334155"
+									         Padding="12"
+									         Height="44"
+									         FontSize="14"
+									         VerticalContentAlignment="Center"/>
 								</StackPanel>
 
-								<StackPanel>
-									<TextBlock Classes="label" Text="ALTERNATE AIRPORT (ICAO)"/>
+								<!-- Alternate ICAO -->
+								<StackPanel Grid.Column="2" Spacing="8">
+									<TextBlock Text="Alternate ICAO (Optional)"
+									           FontSize="13"
+									           Foreground="#94a3b8"/>
 									<TextBox Text="{Binding AlternateIcao}"
-                                            Classes="modern"
-                                            Watermark="Optional"
-                                            MaxLength="4"/>
+									         Watermark="KLGA"
+									         MaxLength="4"
+									         Background="#1e293b"
+									         Foreground="#e2e8f0"
+									         BorderBrush="#334155"
+									         Padding="12"
+									         Height="44"
+									         FontSize="14"
+									         VerticalContentAlignment="Center"/>
 								</StackPanel>
+							</Grid>
 
-								<StackPanel>
-									<TextBlock Classes="label" Text="RUNWAY"/>
-									<ComboBox ItemsSource="{Binding Runways}"
-                                             SelectedItem="{Binding SelectedRunway}"
-                                             Classes="modern"
-                                             HorizontalAlignment="Stretch"/>
-								</StackPanel>
-							</StackPanel>
-
-							<!-- Flight Details -->
+							<!-- Flight Details (Collapsible) -->
 							<Border Background="#1e293b"
-								CornerRadius="12"
-								Padding="20"
-								Margin="0,12,0,12">
+							        CornerRadius="8"
+							        Padding="20"
+							        BorderBrush="#334155"
+							        BorderThickness="1">
+								<StackPanel Spacing="16">
 
-								<StackPanel Spacing="12">
-									<!-- Header with Toggle Button -->
+									<!-- Header with Toggle -->
 									<Grid ColumnDefinitions="*,Auto">
 										<TextBlock Grid.Column="0"
-												  Text="Flight Details (Optional)"
-												  FontSize="18"
-												  FontWeight="SemiBold"
-												  Foreground="#e0e7ff"
-												  VerticalAlignment="Center"/>
+										           Text="Flight Details (Optional)"
+										           FontSize="16"
+										           FontWeight="SemiBold"
+										           Foreground="#e2e8f0"
+										           VerticalAlignment="Center"/>
 
 										<Button Grid.Column="1"
-											   Click="ToggleFlightDetails_Click"
-											   Background="Transparent"
-											   BorderThickness="0"
-											   Padding="8"
-											   Cursor="Hand">
-											<TextBlock Text="{Binding ShowFlightDetails, Converter={StaticResource BoolToExpandIconConverter}}"
-													  FontSize="16"
-													  Foreground="#94a3b8"
-													  FontFamily="Segoe UI Symbol"/>
+										        Click="ToggleFlightDetails_Click"
+										        Background="Transparent"
+										        BorderThickness="0"
+										        Foreground="#94a3b8"
+										        FontSize="20"
+										        Padding="8"
+										        Cursor="Hand">
+											<TextBlock Text="{Binding ShowFlightDetails, Converter={StaticResource BoolToChevronConverter}}"/>
 										</Button>
 									</Grid>
 
 									<!-- Collapsible Content -->
 									<StackPanel Spacing="16" IsVisible="{Binding ShowFlightDetails}">
 
-										<!-- Flight Type & Aircraft Row -->
-										<Grid ColumnDefinitions="*,*" ColumnSpacing="12">
+										<!-- Weight and Souls Grid -->
+										<Grid ColumnDefinitions="*,*,*" ColumnSpacing="16">
 											<StackPanel Grid.Column="0" Spacing="8">
-												<TextBlock Text="Flight Type"
-														  FontSize="14"
-														  Foreground="#94a3b8"/>
-												<ComboBox ItemsSource="{Binding FlightTypes}"
-														 SelectedItem="{Binding SelectedFlightType}"
-														 PlaceholderText="Select flight type"
-														 Height="40"/>
-											</StackPanel>
-
-											<StackPanel Grid.Column="1" Spacing="8">
-												<TextBlock Text="Aircraft"
-														  FontSize="14"
-														  Foreground="#94a3b8"/>
-												<ComboBox ItemsSource="{Binding AllAircraft}"
-														 SelectedItem="{Binding SelectedAircraft}"
-														 PlaceholderText="Select aircraft"
-														 Height="40">
-													<ComboBox.ItemTemplate>
-														<DataTemplate>
-															<TextBlock Text="{Binding Name}"/>
-														</DataTemplate>
-													</ComboBox.ItemTemplate>
-												</ComboBox>
-											</StackPanel>
-										</Grid>
-
-										<!-- Airport & Runway Information -->
-										<Grid ColumnDefinitions="*,*,*" ColumnSpacing="12">
-											<!-- Departure Airport -->
-											<StackPanel Grid.Column="0" Spacing="8">
-												<TextBlock Text="Departure ICAO"
-														  FontSize="14"
-														  Foreground="#94a3b8"/>
-												<TextBox Text="{Binding DepartureIcao}"
-														Watermark="KJFK"
-														MaxLength="4"
-														Height="40"/>
-												<ComboBox ItemsSource="{Binding DepartureRunways}"
-														 SelectedItem="{Binding SelectedRunway}"
-														 PlaceholderText="Select runway"
-														 Height="40"
-														 IsVisible="{Binding DepartureRunways.Count, Converter={StaticResource CountToBoolConverter}}"/>
-											</StackPanel>
-
-											<!-- Arrival Airport -->
-											<StackPanel Grid.Column="1" Spacing="8">
-												<TextBlock Text="Arrival ICAO (Optional)"
-														  FontSize="14"
-														  Foreground="#94a3b8"/>
-												<TextBox Text="{Binding ArrivalIcao}"
-														Watermark="KEWR"
-														MaxLength="4"
-														Height="40"/>
-												<ComboBox ItemsSource="{Binding ArrivalRunways}"
-														 PlaceholderText="Select runway"
-														 Height="40"
-														 IsVisible="{Binding ArrivalRunways.Count, Converter={StaticResource CountToBoolConverter}}"/>
-											</StackPanel>
-
-											<!-- Alternate Airport -->
-											<StackPanel Grid.Column="2" Spacing="8">
-												<TextBlock Text="Alternate ICAO (Optional)"
-														  FontSize="14"
-														  Foreground="#94a3b8"/>
-												<TextBox Text="{Binding AlternateIcao}"
-														Watermark="KLGA"
-														MaxLength="4"
-														Height="40"/>
-											</StackPanel>
-										</Grid>
-
-										<!-- Weight & Balance -->
-										<Grid ColumnDefinitions="*,*,*" ColumnSpacing="12">
-											<StackPanel Grid.Column="0" Spacing="8">
-												<TextBlock Text="Takeoff Weight (lbs)"
-														  FontSize="14"
-														  Foreground="#94a3b8"/>
+												<TextBlock Text="Takeoff Weight"
+												           FontSize="13"
+												           Foreground="#94a3b8"/>
 												<NumericUpDown Value="{Binding TakeoffWeight}"
-															  Minimum="0"
-															  Maximum="10000"
-															  Increment="10"
-															  Height="40"/>
+												               Minimum="0"
+												               Maximum="999999"
+												               Watermark="0"
+												               Background="#0f172a"
+												               Foreground="#e2e8f0"
+												               BorderBrush="#334155"
+												               Padding="12"
+												               Height="44"/>
 											</StackPanel>
 
 											<StackPanel Grid.Column="1" Spacing="8">
-												<TextBlock Text="Landing Weight (lbs)"
-														  FontSize="14"
-														  Foreground="#94a3b8"/>
+												<TextBlock Text="Landing Weight"
+												           FontSize="13"
+												           Foreground="#94a3b8"/>
 												<NumericUpDown Value="{Binding LandingWeight}"
-															  Minimum="0"
-															  Maximum="10000"
-															  Increment="10"
-															  Height="40"/>
+												               Minimum="0"
+												               Maximum="999999"
+												               Watermark="0"
+												               Background="#0f172a"
+												               Foreground="#e2e8f0"
+												               BorderBrush="#334155"
+												               Padding="12"
+												               Height="44"/>
 											</StackPanel>
 
 											<StackPanel Grid.Column="2" Spacing="8">
 												<TextBlock Text="Souls on Board"
-														  FontSize="14"
-														  Foreground="#94a3b8"/>
+												           FontSize="13"
+												           Foreground="#94a3b8"/>
 												<NumericUpDown Value="{Binding SoulsOnBoard}"
-															  Minimum="1"
-															  Maximum="20"
-															  Increment="1"
-															  Height="40"/>
+												               Minimum="0"
+												               Maximum="999"
+												               Watermark="0"
+												               Background="#0f172a"
+												               Foreground="#e2e8f0"
+												               BorderBrush="#334155"
+												               Padding="12"
+												               Height="44"/>
 											</StackPanel>
 										</Grid>
 
-										<!-- Fuel & Route -->
-										<Grid ColumnDefinitions="*,2*" ColumnSpacing="12">
-											<StackPanel Grid.Column="0" Spacing="8">
-												<TextBlock Text="Fuel Planned (gallons)"
-														  FontSize="14"
-														  Foreground="#94a3b8"/>
-												<NumericUpDown Value="{Binding FuelPlanned}"
-															  Minimum="0"
-															  Maximum="500"
-															  Increment="1"
-															  FormatString="F1"
-															  Height="40"/>
-											</StackPanel>
+										<!-- Fuel Planned -->
+										<StackPanel Spacing="8">
+											<TextBlock Text="Fuel Planned (gal)"
+											           FontSize="13"
+											           Foreground="#94a3b8"/>
+											<NumericUpDown Value="{Binding FuelPlanned}"
+											               Minimum="0"
+											               Maximum="99999"
+											               Watermark="0.0"
+											               FormatString="F1"
+											               Background="#0f172a"
+											               Foreground="#e2e8f0"
+											               BorderBrush="#334155"
+											               Padding="12"
+											               Height="44"/>
+										</StackPanel>
 
-											<StackPanel Grid.Column="1" Spacing="8">
-												<TextBlock Text="Route"
-														  FontSize="14"
-														  Foreground="#94a3b8"/>
-												<TextBox Text="{Binding Route}"
-														Watermark="DCT or specify waypoints"
-														Height="40"/>
-											</StackPanel>
-										</Grid>
+										<!-- Route - Made Bigger -->
+										<StackPanel Spacing="8">
+											<TextBlock Text="Route"
+											           FontSize="13"
+											           Foreground="#94a3b8"/>
+											<TextBox Text="{Binding Route}"
+											         Watermark="DCT or specify waypoints"
+											         AcceptsReturn="True"
+											         TextWrapping="Wrap"
+											         MinHeight="100"
+											         Background="#0f172a"
+											         Foreground="#e2e8f0"
+											         BorderBrush="#334155"
+											         Padding="12"
+											         FontSize="14"
+											         VerticalAlignment="Top"/>
+										</StackPanel>
 
 										<!-- Info Text -->
 										<TextBlock Text="Runway selections will be used for crosswind calculations"
-												  FontSize="12"
-												  Foreground="#64748b"
-												  FontStyle="Italic"
-												  Margin="0,4,0,0"/>
-
+										           FontSize="12"
+										           Foreground="#64748b"
+										           TextAlignment="Center"
+										           Margin="0,8,0,0"/>
 									</StackPanel>
 								</StackPanel>
 							</Border>
 
 							<!-- Check Weather Button -->
-							<Button Classes="primary"
-							   Click="CheckWeather_Click"
-							   HorizontalAlignment="Stretch"
-							   IsVisible="{Binding DepartureIcao, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"
-							   Margin="0,12,0,0">
-								<StackPanel Orientation="Horizontal" Spacing="8">
-									<TextBlock Text="🌤" FontSize="18"/>
-									<TextBlock Text="Check Weather" VerticalAlignment="Center"/>
-								</StackPanel>
-							</Button>
-
-							<!-- AI Help Button (Future) -->
-							<Button Classes="secondary"
-                                   HorizontalAlignment="Stretch"
-                                   IsVisible="False">
-								<StackPanel Orientation="Horizontal" Spacing="8">
-									<TextBlock Text="🤖" FontSize="16"/>
-									<TextBlock Text="AI Help" VerticalAlignment="Center"/>
-								</StackPanel>
+							<Button Content="Check Weather Conditions"
+							        Click="CheckWeather_Click"
+							        HorizontalAlignment="Stretch"
+							        Height="48"
+							        FontSize="16"
+							        FontWeight="SemiBold"
+							        Background="#4f46e5"
+							        Foreground="White"
+							        CornerRadius="8"
+							        Cursor="Hand"
+							        IsVisible="{Binding DepartureIcao, Converter={x:Static StringConverters.IsNotNullOrEmpty}}">
+								<Button.Styles>
+									<Style Selector="Button:pointerover">
+										<Setter Property="Background" Value="#4338ca"/>
+									</Style>
+									<Style Selector="Button:pressed">
+										<Setter Property="Background" Value="#3730a3"/>
+									</Style>
+								</Button.Styles>
 							</Button>
 
 						</StackPanel>
@@ -425,11 +397,11 @@
 				</Border>
 
 				<GridSplitter Grid.Column="1"
-				  Width="8"
-				  Background="#334155"
-				  ResizeDirection="Columns"
-				  HorizontalAlignment="Center"
-				  Cursor="SizeWestEast"/>
+				              Width="8"
+				              Background="#334155"
+				              ResizeDirection="Columns"
+				              HorizontalAlignment="Center"
+				              Cursor="SizeWestEast"/>
 
 				<!-- Right Panel - Results -->
 				<Border Grid.Column="1"
@@ -438,7 +410,7 @@
                        CornerRadius="12"
                        Padding="32"
                        BoxShadow="0 4 20 0 #000000">
-					
+
 					<Grid>
 						<!-- Loading State -->
 						<StackPanel HorizontalAlignment="Center"
@@ -459,7 +431,7 @@
 							   CornerRadius="8"
 							   Padding="20">
 							<StackPanel Spacing="12">
-								<TextBlock Text="❌ Error"
+								<TextBlock Text="&#x26A0; Error"
 										  FontSize="18"
 										  FontWeight="SemiBold"
 										  Foreground="#fecaca"/>
@@ -498,7 +470,7 @@
 									   Padding="20">
 									<StackPanel Spacing="16">
 										<StackPanel Orientation="Horizontal" Spacing="12">
-											<TextBlock Text="🌍" FontSize="20"/>
+											<TextBlock Text="&#x1F30D;" FontSize="20"/>
 											<TextBlock Classes="subheader"
 													  Text="{Binding WeatherSummary.AirportName}"
 													  VerticalAlignment="Center"/>
@@ -676,7 +648,7 @@
 								   Spacing="16"
 								   IsVisible="{Binding !ShowResults}"
 								   Opacity="0.5">
-							<TextBlock Text="&#x2708;"
+							<TextBlock Text="&#x2708;&#xFE0F;"
 									  FontSize="64"
 									  HorizontalAlignment="Center"/>
 							<TextBlock Text="Enter flight details and check weather"
