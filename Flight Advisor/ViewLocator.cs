@@ -1,7 +1,8 @@
-using System;
 using Avalonia.Controls;
 using Avalonia.Controls.Templates;
 using FlightAdvisor.ViewModels;
+using ReactiveUI;
+using System;
 
 namespace FlightAdvisor
 {
@@ -26,7 +27,7 @@ namespace FlightAdvisor
 
         public bool Match(object? data)
         {
-            return data is ViewModelBase;
+            return data is ReactiveObject;
         }
     }
 }
