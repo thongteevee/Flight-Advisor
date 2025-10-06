@@ -42,8 +42,10 @@ namespace FlightAdvisor.ViewModels
         private bool _showResults;
         private string _lastUpdateTime;
 
-        // ADD THIS NEW PROPERTY
         private bool _showFlightDetails;
+
+        private bool _isDarkMode = true;
+
 
         public MainViewModel()
         {
@@ -55,6 +57,7 @@ namespace FlightAdvisor.ViewModels
             SelectFlightTypeCommand = ReactiveCommand.Create<string>(SelectFlightType);
             ToggleAdvancedModeCommand = ReactiveCommand.Create(ToggleAdvancedMode);
             RefreshWeatherCommand = ReactiveCommand.CreateFromTask(RefreshWeatherAsync);
+            ToggleThemeCommand = ReactiveCommand.Create(ToggleTheme);
 
             // Initialize collections
             FlightTypes = new ObservableCollection<string>
@@ -197,11 +200,16 @@ namespace FlightAdvisor.ViewModels
             set => this.RaiseAndSetIfChanged(ref _lastUpdateTime, value);
         }
 
-        // ADD THIS NEW PROPERTY
         public bool ShowFlightDetails
         {
             get => _showFlightDetails;
             set => this.RaiseAndSetIfChanged(ref _showFlightDetails, value);
+        }
+
+        public bool IsDarkMode
+        {
+            get => _isDarkMode;
+            set => this.RaiseAndSetIfChanged(ref _isDarkMode, value);
         }
 
         public ObservableCollection<string> FlightTypes { get; }
@@ -218,6 +226,7 @@ namespace FlightAdvisor.ViewModels
         public ReactiveCommand<string, Unit> SelectFlightTypeCommand { get; }
         public ReactiveCommand<Unit, Unit> ToggleAdvancedModeCommand { get; }
         public ReactiveCommand<Unit, Unit> RefreshWeatherCommand { get; }
+        public ReactiveCommand<Unit, Unit> ToggleThemeCommand { get; }
 
         #endregion
 
@@ -271,8 +280,6 @@ namespace FlightAdvisor.ViewModels
                 SelectedRunway = "Auto-Selected";
             }
         }
-
-        // ADD THESE NEW METHODS
         private async Task LoadDepartureRunwaysAsync(string icao)
         {
             try
@@ -432,6 +439,16 @@ namespace FlightAdvisor.ViewModels
                 await CheckWeatherAsync();
             }
         }
+        private void ToggleTheme()
+        {
+            IsDarkMode = !IsDarkMode;
+
+            if (Avalonia.Application.Current is App app)
+            {
+                app.ToggleTheme();
+            }
+        }
+
         #endregion
     }
 }

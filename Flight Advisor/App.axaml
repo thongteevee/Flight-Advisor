@@ -4,7 +4,8 @@
              xmlns:conv="using:FlightAdvisor.Converters"
              xmlns:sty="using:FluentAvalonia.Styling"
              x:Class="FlightAdvisor.App"
-             RequestedThemeVariant="Dark">
+             RequestedThemeVariant="Dark"
+             Name="App">
 
 	<Application.Resources>
 		<!-- Register Converters -->
@@ -13,6 +14,8 @@
 		<conv:CountToBoolConverter x:Key="CountToBoolConverter"/>
 		<conv:BoolToExpandIconConverter x:Key="BoolToExpandIconConverter"/>
 		<conv:BoolToChevronConverter x:Key="BoolToChevronConverter"/>
+		<conv:BoolToThemeIconConverter x:Key="BoolToThemeIconConverter"/>
+		<conv:BoolToThemeTextConverter x:Key="BoolToThemeTextConverter"/>
 	</Application.Resources>
 
 	<Application.Styles>

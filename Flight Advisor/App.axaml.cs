@@ -6,6 +6,7 @@ using Avalonia.Data.Core.Plugins;
 using Avalonia.Markup.Xaml;
 using FlightAdvisor.ViewModels;
 using FlightAdvisor.Views;
+using Avalonia.Styling;
 
 namespace FlightAdvisor
 {
@@ -20,19 +21,27 @@ namespace FlightAdvisor
         {
             if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
             {
-                desktop.MainWindow = new SplashScreen(); // Changed from MainWindow
+                desktop.MainWindow = new SplashScreen();
             }
 
             base.OnFrameworkInitializationCompleted();
         }
 
+        public void ToggleTheme()
+        {
+            var currentTheme = RequestedThemeVariant;
+            RequestedThemeVariant = currentTheme == ThemeVariant.Dark
+                ? ThemeVariant.Light
+                : ThemeVariant.Dark;
+        }
+
+        public bool IsDarkMode => RequestedThemeVariant == ThemeVariant.Dark;
+
         private void DisableAvaloniaDataAnnotationValidation()
         {
-            // Get an array of plugins to remove
             var dataValidationPluginsToRemove =
                 BindingPlugins.DataValidators.OfType<DataAnnotationsValidationPlugin>().ToArray();
 
-            // remove each entry found
             foreach (var plugin in dataValidationPluginsToRemove)
             {
                 BindingPlugins.DataValidators.Remove(plugin);
