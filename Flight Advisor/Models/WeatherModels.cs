@@ -17,17 +17,19 @@ namespace FlightAdvisor.Models
         public string IcaoId { get; set; }
 
         [JsonPropertyName("receiptTime")]
-        public DateTime ReceiptTime { get; set; }
+        public DateTime? ReceiptTime { get; set; }
 
         [JsonPropertyName("obsTime")]
-        public long ObservationTimeUnix { get; set; }
+        public long? ObservationTimeUnix { get; set; }
 
         [JsonPropertyName("reportTime")]
-        public DateTime ReportTime { get; set; }
+        public DateTime? ReportTime { get; set; }
 
         // Computed property for ObservationTime
         [JsonIgnore]
-        public DateTime ObservationTime => DateTimeOffset.FromUnixTimeSeconds(ObservationTimeUnix).DateTime;
+        public DateTime ObservationTime => ObservationTimeUnix.HasValue
+            ? DateTimeOffset.FromUnixTimeSeconds(ObservationTimeUnix.Value).DateTime
+            : ReportTime ?? DateTime.MinValue;
 
         [JsonPropertyName("temp")]
         public double? Temperature { get; set; }
@@ -144,19 +146,19 @@ namespace FlightAdvisor.Models
         public string IcaoId { get; set; }
 
         [JsonPropertyName("dbPopTime")]
-        public DateTime DbPopTime { get; set; }
+        public DateTime? DbPopTime { get; set; }
 
         [JsonPropertyName("bulletinTime")]
-        public DateTime BulletinTime { get; set; }
+        public DateTime? BulletinTime { get; set; }
 
         [JsonPropertyName("issueTime")]
-        public DateTime IssueTime { get; set; }
+        public DateTime? IssueTime { get; set; }
 
         [JsonPropertyName("validTimeFrom")]
-        public DateTime ValidTimeFrom { get; set; }
+        public DateTime? ValidTimeFrom { get; set; }
 
         [JsonPropertyName("validTimeTo")]
-        public DateTime ValidTimeTo { get; set; }
+        public DateTime? ValidTimeTo { get; set; }
 
         [JsonPropertyName("rawTAF")]
         public string RawTaf { get; set; }
@@ -183,10 +185,10 @@ namespace FlightAdvisor.Models
     public class TafForecast
     {
         [JsonPropertyName("fcst_time_from")]
-        public DateTime ForecastTimeFrom { get; set; }
+        public DateTime? ForecastTimeFrom { get; set; }
 
         [JsonPropertyName("fcst_time_to")]
-        public DateTime ForecastTimeTo { get; set; }
+        public DateTime? ForecastTimeTo { get; set; }
 
         [JsonPropertyName("timeBecoming")]
         public DateTime? TimeBecoming { get; set; }
