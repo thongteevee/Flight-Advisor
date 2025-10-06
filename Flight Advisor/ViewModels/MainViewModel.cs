@@ -433,6 +433,11 @@ namespace FlightAdvisor.ViewModels
             }
         }
 
+        private void ToggleFlightDetails_Click(object sender, Avalonia.Interactivity.RoutedEventArgs e)
+        {
+            if (DataContext is MainViewModel vm)
+                vm.ShowFlightDetails = !vm.ShowFlightDetails;
+        }
         #endregion
     }
 }
