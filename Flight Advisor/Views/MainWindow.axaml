@@ -11,58 +11,60 @@
         Width="1400"
         Height="900"
         WindowStartupLocation="CenterScreen"
-        Background="#0a0e1a"
         TransparencyLevelHint="AcrylicBlur">
 
 	<Window.Resources>
 		<converters:BoolToChevronConverter x:Key="BoolToChevronConverter"/>
+		<!-- Theme Resources - Dark Mode (Default) -->
+		<SolidColorBrush x:Key="AppBackground" Color="#0a0e1a"/>
+		<SolidColorBrush x:Key="AppGradient1" Color="#0a0e1a"/>
+		<SolidColorBrush x:Key="AppGradient2" Color="#1e293b"/>
+		<SolidColorBrush x:Key="AppSurface" Color="#0f172a"/>
+		<SolidColorBrush x:Key="AppSurface2" Color="#1e293b"/>
+		<SolidColorBrush x:Key="AppBorder" Color="#334155"/>
+		<SolidColorBrush x:Key="AppText" Color="#e0e7ff"/>
+		<SolidColorBrush x:Key="AppTextSecondary" Color="#c7d2fe"/>
+		<SolidColorBrush x:Key="AppTextTertiary" Color="#94a3b8"/>
+		<SolidColorBrush x:Key="AppTextQuaternary" Color="#64748b"/>
+		<SolidColorBrush x:Key="ThemeButtonBg" Color="#1e293b"/>
+		<SolidColorBrush x:Key="ThemeButtonBorder" Color="#334155"/>
 	</Window.Resources>
 
 	<Window.Styles>
-		<!-- Garmin-Style Color Palette -->
+		<!-- Light Mode Overrides -->
+		<Style Selector="Window[RequestedThemeVariant=Light]">
+			<Style.Resources>
+				<SolidColorBrush x:Key="AppBackground" Color="#f8fafc"/>
+				<SolidColorBrush x:Key="AppGradient1" Color="#f8fafc"/>
+				<SolidColorBrush x:Key="AppGradient2" Color="#e2e8f0"/>
+				<SolidColorBrush x:Key="AppSurface" Color="#ffffff"/>
+				<SolidColorBrush x:Key="AppSurface2" Color="#f1f5f9"/>
+				<SolidColorBrush x:Key="AppBorder" Color="#cbd5e1"/>
+				<SolidColorBrush x:Key="AppText" Color="#0f172a"/>
+				<SolidColorBrush x:Key="AppTextSecondary" Color="#334155"/>
+				<SolidColorBrush x:Key="AppTextTertiary" Color="#64748b"/>
+				<SolidColorBrush x:Key="AppTextQuaternary" Color="#94a3b8"/>
+				<SolidColorBrush x:Key="ThemeButtonBg" Color="#e2e8f0"/>
+				<SolidColorBrush x:Key="ThemeButtonBorder" Color="#cbd5e1"/>
+			</Style.Resources>
+		</Style>
+
 		<Style Selector="TextBlock.header">
 			<Setter Property="FontSize" Value="24"/>
 			<Setter Property="FontWeight" Value="SemiBold"/>
-			<Setter Property="Foreground" Value="#e0e7ff"/>
+			<Setter Property="Foreground" Value="{DynamicResource AppText}"/>
 		</Style>
 
 		<Style Selector="TextBlock.subheader">
 			<Setter Property="FontSize" Value="16"/>
 			<Setter Property="FontWeight" Value="Medium"/>
-			<Setter Property="Foreground" Value="#c7d2fe"/>
+			<Setter Property="Foreground" Value="{DynamicResource AppTextSecondary}"/>
 		</Style>
 
 		<Style Selector="TextBlock.label">
 			<Setter Property="FontSize" Value="12"/>
-			<Setter Property="Foreground" Value="#94a3b8"/>
+			<Setter Property="Foreground" Value="{DynamicResource AppTextTertiary}"/>
 			<Setter Property="Margin" Value="0,0,0,4"/>
-		</Style>
-
-		<Style Selector="TextBox.modern">
-			<Setter Property="Background" Value="#1e293b"/>
-			<Setter Property="Foreground" Value="#e0e7ff"/>
-			<Setter Property="BorderBrush" Value="#334155"/>
-			<Setter Property="BorderThickness" Value="1"/>
-			<Setter Property="Padding" Value="12,8"/>
-			<Setter Property="CornerRadius" Value="6"/>
-			<Setter Property="FontSize" Value="14"/>
-		</Style>
-
-		<Style Selector="TextBox.modern:pointerover">
-			<Setter Property="BorderBrush" Value="#4f46e5"/>
-		</Style>
-
-		<Style Selector="TextBox.modern:focus">
-			<Setter Property="BorderBrush" Value="#6366f1"/>
-			<Setter Property="BorderThickness" Value="2"/>
-		</Style>
-
-		<Style Selector="ComboBox.modern">
-			<Setter Property="Background" Value="#1e293b"/>
-			<Setter Property="Foreground" Value="#e0e7ff"/>
-			<Setter Property="BorderBrush" Value="#334155"/>
-			<Setter Property="Padding" Value="12,8"/>
-			<Setter Property="CornerRadius" Value="6"/>
 		</Style>
 
 		<Style Selector="Button.primary">
@@ -79,9 +81,9 @@
 		</Style>
 
 		<Style Selector="Button.secondary">
-			<Setter Property="Background" Value="#1e293b"/>
-			<Setter Property="Foreground" Value="#e0e7ff"/>
-			<Setter Property="BorderBrush" Value="#334155"/>
+			<Setter Property="Background" Value="{DynamicResource AppSurface2}"/>
+			<Setter Property="Foreground" Value="{DynamicResource AppText}"/>
+			<Setter Property="BorderBrush" Value="{DynamicResource AppBorder}"/>
 			<Setter Property="BorderThickness" Value="1"/>
 			<Setter Property="Padding" Value="16,8"/>
 			<Setter Property="CornerRadius" Value="6"/>
@@ -93,8 +95,8 @@
 		<Border>
 			<Border.Background>
 				<LinearGradientBrush StartPoint="0%,0%" EndPoint="100%,100%">
-					<GradientStop Color="#0a0e1a" Offset="0"/>
-					<GradientStop Color="#1e293b" Offset="1"/>
+					<GradientStop Color="{Binding Source={StaticResource AppGradient1}, Path=Color}" Offset="0"/>
+					<GradientStop Color="{Binding Source={StaticResource AppGradient2}, Path=Color}" Offset="1"/>
 				</LinearGradientBrush>
 			</Border.Background>
 		</Border>
@@ -141,10 +143,10 @@
 
 				<!-- Left Panel - Input -->
 				<Border Grid.Column="0"
-                       Background="#0f172a"
+                       Background="{DynamicResource AppSurface}"
                        CornerRadius="12"
                        Padding="24"
-                       BoxShadow="0 4 20 0 #000000">
+                       BoxShadow="0 4 20 0 #00000040">
 
 					<ScrollViewer>
 						<StackPanel Spacing="20">
@@ -154,15 +156,15 @@
 								<TextBlock Text="Flight Type"
 								           FontSize="14"
 								           FontWeight="SemiBold"
-								           Foreground="#e2e8f0"/>
+								           Foreground="{DynamicResource AppText}"/>
 
 								<ComboBox ItemsSource="{Binding FlightTypes}"
 								          SelectedItem="{Binding SelectedFlightType}"
 								          PlaceholderText="Select flight type"
 								          HorizontalAlignment="Stretch"
-								          Background="#1e293b"
-								          Foreground="#e2e8f0"
-								          BorderBrush="#334155"
+								          Background="{DynamicResource AppSurface2}"
+								          Foreground="{DynamicResource AppText}"
+								          BorderBrush="{DynamicResource AppBorder}"
 								          Padding="12"
 								          Height="44"/>
 							</StackPanel>
@@ -172,15 +174,15 @@
 								<TextBlock Text="Aircraft"
 								           FontSize="14"
 								           FontWeight="SemiBold"
-								           Foreground="#e2e8f0"/>
+								           Foreground="{DynamicResource AppText}"/>
 
 								<ComboBox ItemsSource="{Binding AllAircraft}"
 								          SelectedItem="{Binding SelectedAircraft}"
 								          PlaceholderText="Select aircraft"
 								          HorizontalAlignment="Stretch"
-								          Background="#1e293b"
-								          Foreground="#e2e8f0"
-								          BorderBrush="#334155"
+								          Background="{DynamicResource AppSurface2}"
+								          Foreground="{DynamicResource AppText}"
+								          BorderBrush="{DynamicResource AppBorder}"
 								          Padding="12"
 								          Height="44">
 									<ComboBox.ItemTemplate>
@@ -193,51 +195,48 @@
 
 							<!-- Airport Codes -->
 							<Grid ColumnDefinitions="*,*,*" ColumnSpacing="16">
-								<!-- Departure ICAO -->
 								<StackPanel Grid.Column="0" Spacing="8">
-									<TextBlock Text="Departure ICAO"
+									<TextBlock Text="Departure"
 									           FontSize="13"
-									           Foreground="#94a3b8"/>
+									           Foreground="{DynamicResource AppTextTertiary}"/>
 									<TextBox Text="{Binding DepartureIcao}"
 									         Watermark="KJFK"
 									         MaxLength="4"
-									         Background="#1e293b"
-									         Foreground="#e2e8f0"
-									         BorderBrush="#334155"
+									         Background="{DynamicResource AppSurface2}"
+									         Foreground="{DynamicResource AppText}"
+									         BorderBrush="{DynamicResource AppBorder}"
 									         Padding="12"
 									         Height="44"
 									         FontSize="14"
 									         VerticalContentAlignment="Center"/>
 								</StackPanel>
 
-								<!-- Arrival ICAO -->
 								<StackPanel Grid.Column="1" Spacing="8">
-									<TextBlock Text="Arrival ICAO (Optional)"
+									<TextBlock Text="Arrival (Opt)"
 									           FontSize="13"
-									           Foreground="#94a3b8"/>
+									           Foreground="{DynamicResource AppTextTertiary}"/>
 									<TextBox Text="{Binding ArrivalIcao}"
 									         Watermark="KEWR"
 									         MaxLength="4"
-									         Background="#1e293b"
-									         Foreground="#e2e8f0"
-									         BorderBrush="#334155"
+									         Background="{DynamicResource AppSurface2}"
+									         Foreground="{DynamicResource AppText}"
+									         BorderBrush="{DynamicResource AppBorder}"
 									         Padding="12"
 									         Height="44"
 									         FontSize="14"
 									         VerticalContentAlignment="Center"/>
 								</StackPanel>
 
-								<!-- Alternate ICAO -->
 								<StackPanel Grid.Column="2" Spacing="8">
-									<TextBlock Text="Alternate ICAO (Optional)"
+									<TextBlock Text="Alternate (Opt)"
 									           FontSize="13"
-									           Foreground="#94a3b8"/>
+									           Foreground="{DynamicResource AppTextTertiary}"/>
 									<TextBox Text="{Binding AlternateIcao}"
 									         Watermark="KLGA"
 									         MaxLength="4"
-									         Background="#1e293b"
-									         Foreground="#e2e8f0"
-									         BorderBrush="#334155"
+									         Background="{DynamicResource AppSurface2}"
+									         Foreground="{DynamicResource AppText}"
+									         BorderBrush="{DynamicResource AppBorder}"
 									         Padding="12"
 									         Height="44"
 									         FontSize="14"
@@ -246,27 +245,26 @@
 							</Grid>
 
 							<!-- Flight Details (Collapsible) -->
-							<Border Background="#1e293b"
+							<Border Background="{DynamicResource AppSurface2}"
 							        CornerRadius="8"
 							        Padding="20"
-							        BorderBrush="#334155"
+							        BorderBrush="{DynamicResource AppBorder}"
 							        BorderThickness="1">
 								<StackPanel Spacing="16">
 
-									<!-- Header with Toggle -->
 									<Grid ColumnDefinitions="*,Auto">
 										<TextBlock Grid.Column="0"
 										           Text="Flight Details (Optional)"
 										           FontSize="16"
 										           FontWeight="SemiBold"
-										           Foreground="#e2e8f0"
+										           Foreground="{DynamicResource AppText}"
 										           VerticalAlignment="Center"/>
 
 										<Button Grid.Column="1"
 										        Click="ToggleFlightDetails_Click"
 										        Background="Transparent"
 										        BorderThickness="0"
-										        Foreground="#94a3b8"
+										        Foreground="{DynamicResource AppTextTertiary}"
 										        FontSize="20"
 										        Padding="8"
 										        Cursor="Hand">
@@ -274,22 +272,20 @@
 										</Button>
 									</Grid>
 
-									<!-- Collapsible Content -->
 									<StackPanel Spacing="16" IsVisible="{Binding ShowFlightDetails}">
 
-										<!-- Weight and Souls Grid -->
 										<Grid ColumnDefinitions="*,*,*" ColumnSpacing="16">
 											<StackPanel Grid.Column="0" Spacing="8">
 												<TextBlock Text="Takeoff Weight"
 												           FontSize="13"
-												           Foreground="#94a3b8"/>
+												           Foreground="{DynamicResource AppTextTertiary}"/>
 												<NumericUpDown Value="{Binding TakeoffWeight}"
 												               Minimum="0"
 												               Maximum="999999"
 												               Watermark="0"
-												               Background="#0f172a"
-												               Foreground="#e2e8f0"
-												               BorderBrush="#334155"
+												               Background="{DynamicResource AppSurface}"
+												               Foreground="{DynamicResource AppText}"
+												               BorderBrush="{DynamicResource AppBorder}"
 												               Padding="12"
 												               Height="44"/>
 											</StackPanel>
@@ -297,14 +293,14 @@
 											<StackPanel Grid.Column="1" Spacing="8">
 												<TextBlock Text="Landing Weight"
 												           FontSize="13"
-												           Foreground="#94a3b8"/>
+												           Foreground="{DynamicResource AppTextTertiary}"/>
 												<NumericUpDown Value="{Binding LandingWeight}"
 												               Minimum="0"
 												               Maximum="999999"
 												               Watermark="0"
-												               Background="#0f172a"
-												               Foreground="#e2e8f0"
-												               BorderBrush="#334155"
+												               Background="{DynamicResource AppSurface}"
+												               Foreground="{DynamicResource AppText}"
+												               BorderBrush="{DynamicResource AppBorder}"
 												               Padding="12"
 												               Height="44"/>
 											</StackPanel>
@@ -312,58 +308,55 @@
 											<StackPanel Grid.Column="2" Spacing="8">
 												<TextBlock Text="Souls on Board"
 												           FontSize="13"
-												           Foreground="#94a3b8"/>
+												           Foreground="{DynamicResource AppTextTertiary}"/>
 												<NumericUpDown Value="{Binding SoulsOnBoard}"
 												               Minimum="0"
 												               Maximum="999"
 												               Watermark="0"
-												               Background="#0f172a"
-												               Foreground="#e2e8f0"
-												               BorderBrush="#334155"
+												               Background="{DynamicResource AppSurface}"
+												               Foreground="{DynamicResource AppText}"
+												               BorderBrush="{DynamicResource AppBorder}"
 												               Padding="12"
 												               Height="44"/>
 											</StackPanel>
 										</Grid>
 
-										<!-- Fuel Planned -->
 										<StackPanel Spacing="8">
 											<TextBlock Text="Fuel Planned (gal)"
 											           FontSize="13"
-											           Foreground="#94a3b8"/>
+											           Foreground="{DynamicResource AppTextTertiary}"/>
 											<NumericUpDown Value="{Binding FuelPlanned}"
 											               Minimum="0"
 											               Maximum="99999"
 											               Watermark="0.0"
 											               FormatString="F1"
-											               Background="#0f172a"
-											               Foreground="#e2e8f0"
-											               BorderBrush="#334155"
+											               Background="{DynamicResource AppSurface}"
+											               Foreground="{DynamicResource AppText}"
+											               BorderBrush="{DynamicResource AppBorder}"
 											               Padding="12"
 											               Height="44"/>
 										</StackPanel>
 
-										<!-- Route - Made Bigger -->
 										<StackPanel Spacing="8">
 											<TextBlock Text="Route"
 											           FontSize="13"
-											           Foreground="#94a3b8"/>
+											           Foreground="{DynamicResource AppTextTertiary}"/>
 											<TextBox Text="{Binding Route}"
 											         Watermark="DCT or specify waypoints"
 											         AcceptsReturn="True"
 											         TextWrapping="Wrap"
 											         MinHeight="100"
-											         Background="#0f172a"
-											         Foreground="#e2e8f0"
-											         BorderBrush="#334155"
+											         Background="{DynamicResource AppSurface}"
+											         Foreground="{DynamicResource AppText}"
+											         BorderBrush="{DynamicResource AppBorder}"
 											         Padding="12"
 											         FontSize="14"
 											         VerticalAlignment="Top"/>
 										</StackPanel>
 
-										<!-- Info Text -->
 										<TextBlock Text="Runway selections will be used for crosswind calculations"
 										           FontSize="12"
-										           Foreground="#64748b"
+										           Foreground="{DynamicResource AppTextQuaternary}"
 										           TextAlignment="Center"
 										           Margin="0,8,0,0"/>
 									</StackPanel>
@@ -398,18 +391,19 @@
 
 				<GridSplitter Grid.Column="1"
 				              Width="8"
-				              Background="#334155"
+				              Background="{DynamicResource AppBorder}"
 				              ResizeDirection="Columns"
 				              HorizontalAlignment="Center"
 				              Cursor="SizeWestEast"/>
 
+
 				<!-- Right Panel - Results -->
 				<Border Grid.Column="1"
                        Margin="24,0,0,0"
-                       Background="#0f172a"
+                       Background="{DynamicResource AppSurface}"
                        CornerRadius="12"
                        Padding="32"
-                       BoxShadow="0 4 20 0 #000000">
+                       BoxShadow="0 4 20 0 #00000040">
 
 					<Grid>
 						<!-- Loading State -->
@@ -425,7 +419,7 @@
 
 						<!-- Error State -->
 						<Border IsVisible="{Binding ErrorMessage, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"
-							   Background="#7f1d1d"
+							   Background="#fee2e2"
 							   BorderBrush="#dc2626"
 							   BorderThickness="1"
 							   CornerRadius="8"
@@ -434,9 +428,9 @@
 								<TextBlock Text="&#x26A0; Error"
 										  FontSize="18"
 										  FontWeight="SemiBold"
-										  Foreground="#fecaca"/>
+										  Foreground="#991b1b"/>
 								<TextBlock Text="{Binding ErrorMessage}"
-										  Foreground="#fecaca"
+										  Foreground="#991b1b"
 										  TextWrapping="Wrap"/>
 							</StackPanel>
 						</Border>
@@ -465,7 +459,7 @@
 								</Border>
 
 								<!-- Weather Summary -->
-								<Border Background="#1e293b"
+								<Border Background="{DynamicResource AppSurface2}"
 									   CornerRadius="10"
 									   Padding="20">
 									<StackPanel Spacing="16">
@@ -475,77 +469,70 @@
 													  Text="{Binding WeatherSummary.AirportName}"
 													  VerticalAlignment="Center"/>
 											<TextBlock Text="{Binding WeatherSummary.AirportIcao, StringFormat='({0})'}"
-													  Foreground="#94a3b8"
-													  VerticalAlignment="Center"
-													  Margin="0,0,0,0"/>
+													  Foreground="{DynamicResource AppTextTertiary}"
+													  VerticalAlignment="Center"/>
 										</StackPanel>
 
 										<Grid ColumnDefinitions="*,*,*" RowDefinitions="Auto,Auto" ColumnSpacing="20" RowSpacing="12">
-											<!-- Temperature -->
 											<StackPanel Grid.Row="0" Grid.Column="0">
 												<TextBlock Classes="label" Text="TEMPERATURE"/>
-												<TextBlock Text="{Binding WeatherSummary.Temperature, StringFormat='{}{0}?C'}"
+												<TextBlock Text="{Binding WeatherSummary.Temperature, StringFormat='{}{0}°C'}"
 														  FontSize="24"
 														  FontWeight="SemiBold"
-														  Foreground="#e0e7ff"/>
+														  Foreground="{DynamicResource AppText}"/>
 											</StackPanel>
 
-											<!-- Wind -->
 											<StackPanel Grid.Row="0" Grid.Column="1">
 												<TextBlock Classes="label" Text="WIND"/>
-												<TextBlock FontSize="20" Foreground="#e0e7ff">
-													<Run Text="{Binding WeatherSummary.WindDirection, StringFormat='{}{0}?'}"/>
+												<TextBlock FontSize="20" Foreground="{DynamicResource AppText}">
+													<Run Text="{Binding WeatherSummary.WindDirection, StringFormat='{}{0}°'}"/>
 													<Run Text=" at "/>
 													<Run Text="{Binding WeatherSummary.WindSpeed, StringFormat='{}{0}kts'}"/>
 												</TextBlock>
 											</StackPanel>
 
-											<!-- Visibility -->
 											<StackPanel Grid.Row="0" Grid.Column="2">
 												<TextBlock Classes="label" Text="VISIBILITY"/>
 												<TextBlock Text="{Binding WeatherSummary.Visibility}"
 														  FontSize="20"
-														  Foreground="#e0e7ff"/>
+														  Foreground="{DynamicResource AppText}"/>
 											</StackPanel>
 
-											<!-- Altimeter -->
 											<StackPanel Grid.Row="1" Grid.Column="0">
 												<TextBlock Classes="label" Text="ALTIMETER"/>
 												<TextBlock Text="{Binding WeatherSummary.Altimeter, StringFormat='{}{0:F2} inHg'}"
 														  FontSize="18"
-														  Foreground="#e0e7ff"/>
+														  Foreground="{DynamicResource AppText}"/>
 											</StackPanel>
 
-											<!-- Crosswind -->
 											<StackPanel Grid.Row="1" Grid.Column="1" IsVisible="{Binding WeatherSummary.CrosswindComponent, Converter={x:Static ObjectConverters.IsNotNull}}">
 												<TextBlock Classes="label" Text="CROSSWIND"/>
 												<TextBlock Text="{Binding WeatherSummary.CrosswindComponent, StringFormat='{}{0}kts'}"
 														  FontSize="18"
-														  Foreground="#fbbf24"/>
+														  Foreground="#f59e0b"/>
 											</StackPanel>
 
-											<!-- Density Altitude -->
 											<StackPanel Grid.Row="1" Grid.Column="2" IsVisible="{Binding WeatherSummary.DensityAltitude, Converter={x:Static ObjectConverters.IsNotNull}}">
 												<TextBlock Classes="label" Text="DENSITY ALT"/>
 												<TextBlock Text="{Binding WeatherSummary.DensityAltitude, StringFormat='{}{0}ft'}"
 														  FontSize="18"
-														  Foreground="#e0e7ff"/>
+														  Foreground="{DynamicResource AppText}"/>
 											</StackPanel>
 										</Grid>
 
-										<!-- Update Time -->
 										<TextBlock Text="{Binding LastUpdateTime, StringFormat='Last updated: {0}'}"
-												  Foreground="#64748b"
+												  Foreground="{DynamicResource AppTextQuaternary}"
 												  FontSize="12"
 												  HorizontalAlignment="Right"/>
 									</StackPanel>
 								</Border>
 
+
 								<!-- Hazards List -->
 								<ItemsControl ItemsSource="{Binding CurrentDecision.Hazards}">
 									<ItemsControl.ItemTemplate>
 										<DataTemplate>
-											<Border Background="#7f1d1d"
+											<Border Background="#fee2e2"
 												   BorderBrush="#dc2626"
 												   BorderThickness="1"
 												   CornerRadius="8"
@@ -557,13 +544,13 @@
 														<TextBlock Text="{Binding Type}"
 																  FontWeight="SemiBold"
 																  FontSize="16"
-																  Foreground="#fecaca"/>
+																  Foreground="#991b1b"/>
 													</StackPanel>
 													<TextBlock Text="{Binding Description}"
-															  Foreground="#fecaca"
+															  Foreground="#991b1b"
 															  TextWrapping="Wrap"/>
 													<TextBlock Text="{Binding QuickTip}"
-															  Foreground="#fca5a5"
+															  Foreground="#b91c1c"
 															  FontSize="12"
 															  Opacity="0.9"
 															  TextWrapping="Wrap"
@@ -575,7 +562,7 @@
 								</ItemsControl>
 
 								<!-- Recommendations -->
-								<Border Background="#1e293b" CornerRadius="10" Padding="20"
+								<Border Background="{DynamicResource AppSurface2}" CornerRadius="10" Padding="20"
 									   IsVisible="{Binding CurrentDecision.Recommendations.Count, Converter={StaticResource CountToBoolConverter}}">
 									<StackPanel Spacing="12">
 										<TextBlock Text="&#x1F4CB; Recommendations"
@@ -584,9 +571,9 @@
 											<ItemsControl.ItemTemplate>
 												<DataTemplate>
 													<StackPanel Orientation="Horizontal" Spacing="8" Margin="0,4">
-														<TextBlock Text="?" Foreground="#94a3b8"/>
+														<TextBlock Text="•" Foreground="{DynamicResource AppTextTertiary}"/>
 														<TextBlock Text="{Binding}"
-																  Foreground="#c7d2fe"
+																  Foreground="{DynamicResource AppTextSecondary}"
 																  TextWrapping="Wrap"/>
 													</StackPanel>
 												</DataTemplate>
@@ -607,14 +594,13 @@
 
 								<!-- Advanced Mode Content -->
 								<StackPanel Spacing="16" IsVisible="{Binding ShowAdvancedMode}">
-									<!-- Raw METAR -->
-									<Border Background="#1e293b" CornerRadius="10" Padding="20">
+									<Border Background="{DynamicResource AppSurface2}" CornerRadius="10" Padding="20">
 										<StackPanel Spacing="8">
 											<TextBlock Classes="label" Text="RAW METAR"/>
 											<TextBox Text="{Binding WeatherSummary.RawMetar}"
 													IsReadOnly="True"
 													TextWrapping="Wrap"
-													Background="#0f172a"
+													Background="{DynamicResource AppSurface}"
 													Foreground="#22d3ee"
 													FontFamily="Consolas,Courier New"
 													FontSize="13"
@@ -622,15 +608,14 @@
 										</StackPanel>
 									</Border>
 
-									<!-- Raw TAF -->
-									<Border Background="#1e293b" CornerRadius="10" Padding="20"
+									<Border Background="{DynamicResource AppSurface2}" CornerRadius="10" Padding="20"
 										   IsVisible="{Binding WeatherSummary.RawTaf, Converter={x:Static StringConverters.IsNotNullOrEmpty}}">
 										<StackPanel Spacing="8">
 											<TextBlock Classes="label" Text="RAW TAF"/>
 											<TextBox Text="{Binding WeatherSummary.RawTaf}"
 													IsReadOnly="True"
 													TextWrapping="Wrap"
-													Background="#0f172a"
+													Background="{DynamicResource AppSurface}"
 													Foreground="#a78bfa"
 													FontFamily="Consolas,Courier New"
 													FontSize="13"
@@ -660,6 +645,8 @@
 				</Border>
 			</Grid>
 		</Grid>
+
+		<!-- Theme Toggle Button -->
 		<Canvas HorizontalAlignment="Right"
 				VerticalAlignment="Bottom"
 				Margin="0,0,40,40">
@@ -668,25 +655,25 @@
 					Height="56"
 					CornerRadius="28"
 					ClipToBounds="True"
-					BoxShadow="0 4 12 0 #000000">
+					BoxShadow="0 4 12 0 #00000040">
 
 				<Button Click="ToggleTheme_Click"
 						ToolTip.Tip="Toggle Dark/Light Mode"
 						Width="56"
 						Height="56"
 						CornerRadius="28"
-						Background="#1e293b"
-						BorderBrush="#334155"
+						Background="{DynamicResource ThemeButtonBg}"
+						BorderBrush="{DynamicResource ThemeButtonBorder}"
 						BorderThickness="2"
 						Cursor="Hand">
 
 					<Button.Styles>
 						<Style Selector="Button:pointerover">
-							<Setter Property="Background" Value="#334155"/>
+							<Setter Property="Background" Value="{DynamicResource AppSurface2}"/>
 							<Setter Property="BorderBrush" Value="#4f46e5"/>
 						</Style>
 						<Style Selector="Button:pressed">
-							<Setter Property="Background" Value="#475569"/>
+							<Setter Property="Background" Value="{DynamicResource AppBorder}"/>
 						</Style>
 					</Button.Styles>
 
@@ -698,4 +685,4 @@
 			</Border>
 		</Canvas>
 	</Grid>
-</Window>
+</Window>								
