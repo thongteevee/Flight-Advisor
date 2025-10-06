@@ -1,4 +1,3 @@
-﻿// Services/DecisionEngine.cs
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -10,7 +9,6 @@ namespace FlightAdvisor.Services
     {
         private readonly WeatherService _weatherService;
 
-        // Safety minimums for student/new pilots
         private const double MIN_VISIBILITY_METERS = 550;
         private const int MAX_CROSSWIND_KTS = 15;
         private const int MAX_GUST_KTS = 20;
@@ -23,9 +21,6 @@ namespace FlightAdvisor.Services
             _weatherService = weatherService;
         }
 
-        /// <summary>
-        /// Evaluate flight conditions and generate go/no-go decision
-        /// </summary>
         public FlightDecision EvaluateFlight(MetarData metar, TafData taf, FlightInfo flightInfo)
         {
             var decision = new FlightDecision
@@ -52,7 +47,7 @@ namespace FlightAdvisor.Services
                 decision.Decision = DecisionType.NoGo;
             }
 
-            // 2. Check Crosswind (if runway selected)
+            // 2. Check Crosswind
             if (!string.IsNullOrEmpty(flightInfo.SelectedRunway) && metar.WindDirection.HasValue && metar.WindSpeed.HasValue)
             {
                 var runwayHeading = ParseRunwayHeading(flightInfo.SelectedRunway);
@@ -104,10 +99,10 @@ namespace FlightAdvisor.Services
                     hazards.Add(new WeatherHazard
                     {
                         Type = "Low Temperature",
-                        Description = $"Temperature is {metar.Temperature}°C, below safe operating limit.",
+                        Description = $"Temperature is {metar.Temperature}\u00B0C, below safe operating limit.",
                         Severity = HazardSeverity.High,
-                        Value = $"{metar.Temperature}°C",
-                        Threshold = $"{MIN_TEMP_CELSIUS}°C minimum",
+                        Value = $"{metar.Temperature}\u00B0C",
+                        Threshold = $"{MIN_TEMP_CELSIUS}\u00B0C minimum",
                         QuickTip = "Cold temperatures can affect aircraft performance, fuel systems, and increase icing risk. Pre-heat the engine and check for ice accumulation."
                     });
 
@@ -120,10 +115,10 @@ namespace FlightAdvisor.Services
                     hazards.Add(new WeatherHazard
                     {
                         Type = "High Temperature",
-                        Description = $"Temperature is {metar.Temperature}°C, approaching maximum safe limit.",
+                        Description = $"Temperature is {metar.Temperature}\u00B0C, approaching maximum safe limit.",
                         Severity = HazardSeverity.Medium,
-                        Value = $"{metar.Temperature}°C",
-                        Threshold = $"{MAX_TEMP_CELSIUS}°C maximum",
+                        Value = $"{metar.Temperature}\u00B0C",
+                        Threshold = $"{MAX_TEMP_CELSIUS}\u00B0C maximum",
                         QuickTip = "High temperatures reduce air density, degrading aircraft performance. Expect longer takeoff rolls and reduced climb rates. Calculate density altitude before flight."
                     });
 
@@ -152,7 +147,7 @@ namespace FlightAdvisor.Services
                         Severity = HazardSeverity.High,
                         Value = $"{densityAltitude}ft",
                         Threshold = $"{MAX_ALTITUDE_FT}ft recommended limit",
-                        QuickTip = "High density altitude reduces engine power, propeller efficiency, and wing lift. Performance will be noticeably degraded—plan for longer takeoff and landing distances."
+                        QuickTip = "High density altitude reduces engine power, propeller efficiency, and wing lift. Performance will be noticeably degraded\u2014plan for longer takeoff and landing distances."
                     });
 
                     if (decision.Decision == DecisionType.Go)
@@ -231,7 +226,7 @@ namespace FlightAdvisor.Services
                 }
             }
 
-            // 8. Check Cloud Ceiling (VFR minimums)
+            // 8. Check Cloud Ceiling
             if (metar.Clouds != null && metar.Clouds.Any())
             {
                 var lowestCeiling = metar.Clouds
@@ -256,7 +251,6 @@ namespace FlightAdvisor.Services
                 }
             }
 
-            // Assign hazards and generate summary
             decision.Hazards = hazards;
             decision.Summary = GenerateSummary(decision.Decision, hazards);
             decision.Recommendations = GenerateRecommendations(decision.Decision, hazards, flightInfo);
@@ -270,7 +264,7 @@ namespace FlightAdvisor.Services
             var summary = new WeatherSummary
             {
                 AirportIcao = metar.IcaoId,
-                AirportName = metar.AirportName ?? metar.IcaoId, // Fallback to ICAO if name not available
+                AirportName = metar.AirportName ?? metar.IcaoId,
                 ObservationTime = metar.ObservationTime,
                 Temperature = metar.Temperature,
                 DewPoint = metar.DewPoint,
@@ -284,7 +278,6 @@ namespace FlightAdvisor.Services
                 RawMetar = metar.RawObservation
             };
 
-            // Build cloud layers description
             if (metar.Clouds != null)
             {
                 summary.CloudLayers = metar.Clouds
@@ -300,8 +293,8 @@ namespace FlightAdvisor.Services
             return decision switch
             {
                 DecisionType.Go => "Conditions are favorable for VFR flight. Standard precautions apply.",
-                DecisionType.Caution => $"⚠️ Flight possible with caution. {hazards.Count} concern(s) identified. Review all hazards before departure.",
-                DecisionType.NoGo => $"❌ Flight NOT recommended. {hazards.Where(h => h.Severity >= HazardSeverity.High).Count()} critical hazard(s) present.",
+                DecisionType.Caution => $"\u26A0\uFE0F Flight possible with caution. {hazards.Count} concern(s) identified. Review all hazards before departure.",
+                DecisionType.NoGo => $"\u274C Flight NOT recommended. {hazards.Where(h => h.Severity >= HazardSeverity.High).Count()} critical hazard(s) present.",
                 _ => "Weather information displayed for reference only."
             };
         }
@@ -347,12 +340,11 @@ namespace FlightAdvisor.Services
 
         private int ParseRunwayHeading(string runway)
         {
-            // Extract numeric portion from runway (e.g., "09L" -> 09 -> 090°)
             var numericPart = new string(runway.TakeWhile(char.IsDigit).ToArray());
 
             if (int.TryParse(numericPart, out var heading))
             {
-                return heading * 10; // Runway 09 = 090°
+                return heading * 10;
             }
 
             return 0;
