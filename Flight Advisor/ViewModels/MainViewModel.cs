@@ -1,4 +1,4 @@
-// ViewModels/MainViewModel.cs
+// ViewModels/MainViewModel.cs - ADD THESE PROPERTIES AND UPDATES
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -42,6 +42,9 @@ namespace FlightAdvisor.ViewModels
         private bool _showResults;
         private string _lastUpdateTime;
 
+        // ADD THIS NEW PROPERTY
+        private bool _showFlightDetails;
+
         public MainViewModel()
         {
             _weatherService = new WeatherService();
@@ -64,13 +67,14 @@ namespace FlightAdvisor.ViewModels
             };
 
             Runways = new ObservableCollection<string>();
+            DepartureRunways = new ObservableCollection<string>();
+            ArrivalRunways = new ObservableCollection<string>();
 
+            // Start with flight details collapsed
+            ShowFlightDetails = false;
 
             // Load aircraft database
             LoadAircraftDatabase();
-
-            // Setup auto-refresh (5 minutes)
-            SetupAutoRefresh();
         }
 
         #region Properties
@@ -93,15 +97,20 @@ namespace FlightAdvisor.ViewModels
             set
             {
                 this.RaiseAndSetIfChanged(ref _departureIcao, value?.ToUpper());
-                if (!string.IsNullOrEmpty(value))
-                    _ = LoadRunwaysAsync(value);
+                if (!string.IsNullOrEmpty(value) && value.Length == 4)
+                    _ = LoadDepartureRunwaysAsync(value);
             }
         }
 
         public string ArrivalIcao
         {
             get => _arrivalIcao;
-            set => this.RaiseAndSetIfChanged(ref _arrivalIcao, value?.ToUpper());
+            set
+            {
+                this.RaiseAndSetIfChanged(ref _arrivalIcao, value?.ToUpper());
+                if (!string.IsNullOrEmpty(value) && value.Length == 4)
+                    _ = LoadArrivalRunwaysAsync(value);
+            }
         }
 
         public string AlternateIcao
@@ -188,9 +197,18 @@ namespace FlightAdvisor.ViewModels
             set => this.RaiseAndSetIfChanged(ref _lastUpdateTime, value);
         }
 
+        // ADD THIS NEW PROPERTY
+        public bool ShowFlightDetails
+        {
+            get => _showFlightDetails;
+            set => this.RaiseAndSetIfChanged(ref _showFlightDetails, value);
+        }
+
         public ObservableCollection<string> FlightTypes { get; }
         public ObservableCollection<Aircraft> AllAircraft { get; private set; }
         public ObservableCollection<string> Runways { get; }
+        public ObservableCollection<string> DepartureRunways { get; }
+        public ObservableCollection<string> ArrivalRunways { get; }
 
         #endregion
 
@@ -248,11 +266,92 @@ namespace FlightAdvisor.ViewModels
             }
             catch (Exception ex)
             {
-                // Silently fail for runway loading - not critical
                 Runways.Clear();
                 Runways.Add("Auto-Selected");
                 SelectedRunway = "Auto-Selected";
             }
+        }
+
+        // ADD THESE NEW METHODS
+        private async Task LoadDepartureRunwaysAsync(string icao)
+        {
+            try
+            {
+                var runways = await FetchRunwayData(icao);
+                DepartureRunways.Clear();
+
+                foreach (var runway in runways)
+                {
+                    DepartureRunways.Add(runway);
+                }
+
+                if (DepartureRunways.Any())
+                    SelectedRunway = DepartureRunways.First();
+            }
+            catch
+            {
+                DepartureRunways.Clear();
+                DepartureRunways.Add("Auto-Selected");
+            }
+        }
+
+        private async Task LoadArrivalRunwaysAsync(string icao)
+        {
+            try
+            {
+                var runways = await FetchRunwayData(icao);
+                ArrivalRunways.Clear();
+
+                foreach (var runway in runways)
+                {
+                    ArrivalRunways.Add(runway);
+                }
+            }
+            catch
+            {
+                ArrivalRunways.Clear();
+                ArrivalRunways.Add("Auto-Selected");
+            }
+        }
+
+        private async Task<List<string>> FetchRunwayData(string icao)
+        {
+            string url = $"https://aviationweather.gov/api/data/airport?ids={icao}&format=json";
+            using var client = new System.Net.Http.HttpClient();
+            var runwayList = new List<string>();
+
+            try
+            {
+                client.DefaultRequestHeaders.Add("User-Agent", "FlightAdvisor/1.0");
+                var response = await client.GetStringAsync(url);
+                var airportArray = System.Text.Json.JsonDocument.Parse(response);
+
+                if (airportArray.RootElement.GetArrayLength() > 0)
+                {
+                    var airportData = airportArray.RootElement[0];
+
+                    if (airportData.TryGetProperty("runways", out var runwaysElement))
+                    {
+                        foreach (var runway in runwaysElement.EnumerateArray())
+                        {
+                            if (runway.TryGetProperty("id", out var idElement))
+                            {
+                                var id = idElement.GetString();
+                                if (!string.IsNullOrWhiteSpace(id))
+                                {
+                                    runwayList.Add(id);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            catch
+            {
+                // Return empty list on error
+            }
+
+            return runwayList;
         }
 
         private async Task CheckWeatherAsync()
@@ -263,14 +362,12 @@ namespace FlightAdvisor.ViewModels
 
             try
             {
-                // Validate inputs
                 if (string.IsNullOrEmpty(DepartureIcao))
                 {
                     ErrorMessage = "Please enter a departure airport code.";
                     return;
                 }
 
-                // Fetch weather data
                 var metar = await _weatherService.GetMetarAsync(DepartureIcao);
 
                 if (metar == null)
@@ -286,10 +383,9 @@ namespace FlightAdvisor.ViewModels
                 }
                 catch
                 {
-                    // TAF is optional, continue without it
+                    // TAF is optional
                 }
 
-                // Build flight info
                 var flightInfo = new FlightInfo
                 {
                     FlightType = SelectedFlightType,
@@ -305,7 +401,6 @@ namespace FlightAdvisor.ViewModels
                     SelectedRunway = SelectedRunway
                 };
 
-                // Evaluate conditions
                 CurrentDecision = _decisionEngine.EvaluateFlight(metar, taf, flightInfo);
                 WeatherSummary = CurrentDecision.WeatherSummary;
 
@@ -335,26 +430,7 @@ namespace FlightAdvisor.ViewModels
             if (!string.IsNullOrEmpty(DepartureIcao))
             {
                 await CheckWeatherAsync();
-
-                // Show toast notification (will be handled in View)
-                // For now, just update the timestamp
             }
-        }
-
-        private void SetupAutoRefresh()
-        {
-            _refreshTimer = new System.Timers.Timer(5 * 60 * 1000); // 5 minutes
-            _refreshTimer.Elapsed += async (s, e) =>
-            {
-                if (ShowResults && !IsLoading)
-                {
-                    await Avalonia.Threading.Dispatcher.UIThread.InvokeAsync(async () =>
-                    {
-                        await RefreshWeatherAsync();
-                    });
-                }
-            };
-            _refreshTimer.Start();
         }
 
         #endregion
