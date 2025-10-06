@@ -4,10 +4,10 @@ using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Data.Core;
 using Avalonia.Data.Core.Plugins;
 using Avalonia.Markup.Xaml;
-using Flight_Advisor.ViewModels;
-using Flight_Advisor.Views;
+using FlightAdvisor.ViewModels;
+using FlightAdvisor.Views;
 
-namespace Flight_Advisor
+namespace FlightAdvisor
 {
     public partial class App : Application
     {

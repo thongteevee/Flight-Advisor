@@ -1,15 +1,10 @@
 <Application xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             x:Class="Flight_Advisor.App"
-             xmlns:local="using:Flight_Advisor"
-             RequestedThemeVariant="Default">
-             <!-- "Default" ThemeVariant follows system theme variant. "Dark" or "Light" are other available options. -->
+             x:Class="FlightAdvisor.App"
+             xmlns:sty="using:FluentAvalonia.Styling"
+             RequestedThemeVariant="Light">
 
-    <Application.DataTemplates>
-        <local:ViewLocator/>
-    </Application.DataTemplates>
-  
-    <Application.Styles>
-        <FluentTheme />
-    </Application.Styles>
+	<Application.Styles>
+		<sty:FluentAvaloniaTheme />
+	</Application.Styles>
 </Application>

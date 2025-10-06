@@ -1,9 +1,9 @@
 using System;
 using Avalonia.Controls;
 using Avalonia.Controls.Templates;
-using Flight_Advisor.ViewModels;
+using FlightAdvisor.ViewModels;
 
-namespace Flight_Advisor
+namespace FlightAdvisor
 {
     public class ViewLocator : IDataTemplate
     {

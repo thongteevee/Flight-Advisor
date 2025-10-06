@@ -1,7 +1,7 @@
 ﻿using System;
 using Avalonia;
 
-namespace Flight_Advisor
+namespace FlightAdvisor
 {
     internal sealed class Program
     {

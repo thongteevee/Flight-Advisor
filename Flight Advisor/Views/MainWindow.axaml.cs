@@ -1,6 +1,6 @@
 using Avalonia.Controls;
 
-namespace Flight_Advisor.Views
+namespace FlightAdvisor.Views
 {
     public partial class MainWindow : Window
     {

@@ -1,4 +1,4 @@
-﻿namespace Flight_Advisor.ViewModels
+﻿namespace FlightAdvisor.ViewModels
 {
     public partial class MainWindowViewModel : ViewModelBase
     {
