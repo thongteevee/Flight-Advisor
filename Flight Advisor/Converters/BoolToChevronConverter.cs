@@ -11,12 +11,12 @@ namespace FlightAdvisor.Converters
         {
             if (value is bool isExpanded)
             {
-                // Unicode hex codes for chevrons
-                // Down arrow (expanded): U+25BC
-                // Right arrow (collapsed): U+25B6
-                return isExpanded ? "&#x25BC;" : "&#x25B6;";
+                // Unicode escape sequences for chevrons
+                // Down arrow (expanded): \u25BC ?
+                // Right arrow (collapsed): \u25B6 ?
+                return isExpanded ? "\u25BC" : "\u25B6";
             }
-            return "&#x25B6;";
+            return "\u25B6";
         }
 
         public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
