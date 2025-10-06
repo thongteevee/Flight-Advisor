@@ -132,6 +132,9 @@
 				<Grid.ColumnDefinitions>
 					<ColumnDefinition Width="400"/>
 					<ColumnDefinition Width="*"/>
+					<!--<ColumnDefinition Width="450" MinWidth="350" MaxWidth="600"/>
+					<ColumnDefinition Width="Auto"/>
+					<ColumnDefinition Width="*"/>-->
 				</Grid.ColumnDefinitions>
 
 				<!-- Left Panel - Input -->
@@ -256,10 +259,10 @@
 
 							<!-- Check Weather Button -->
 							<Button Classes="primary"
-                                   Command="{Binding CheckWeatherCommand}"
-                                   HorizontalAlignment="Stretch"
-                                   IsVisible="{Binding DepartureIcao, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"
-                                   Margin="0,12,0,0">
+							   Click="CheckWeather_Click"
+							   HorizontalAlignment="Stretch"
+							   IsVisible="{Binding DepartureIcao, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"
+							   Margin="0,12,0,0">
 								<StackPanel Orientation="Horizontal" Spacing="8">
 									<TextBlock Text="🌤" FontSize="18"/>
 									<TextBlock Text="Check Weather" VerticalAlignment="Center"/>
@@ -279,6 +282,13 @@
 						</StackPanel>
 					</ScrollViewer>
 				</Border>
+
+				<GridSplitter Grid.Column="1"
+				  Width="8"
+				  Background="#334155"
+				  ResizeDirection="Columns"
+				  HorizontalAlignment="Center"
+				  Cursor="SizeWestEast"/>
 
 				<!-- Right Panel - Results -->
 				<Border Grid.Column="1"
@@ -474,8 +484,8 @@
 
 								<!-- Advanced Mode Toggle -->
 								<Button Classes="secondary"
-									   Command="{Binding ToggleAdvancedModeCommand}"
-									   HorizontalAlignment="Left">
+								   Click="ToggleAdvanced_Click"
+								   HorizontalAlignment="Left">
 									<StackPanel Orientation="Horizontal" Spacing="8">
 										<TextBlock Text="{Binding ShowAdvancedMode, Converter={StaticResource BoolToExpandIconConverter}}"/>
 										<TextBlock Text="Advanced Details"/>
