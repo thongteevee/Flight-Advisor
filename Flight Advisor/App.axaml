@@ -12,6 +12,7 @@
 		<conv:DecisionToTextConverter x:Key="DecisionToTextConverter"/>
 		<conv:CountToBoolConverter x:Key="CountToBoolConverter"/>
 		<conv:BoolToExpandIconConverter x:Key="BoolToExpandIconConverter"/>
+		<conv:BoolToChevronConverter x:Key="BoolToChevronConverter"/>
 	</Application.Resources>
 
 	<Application.Styles>
