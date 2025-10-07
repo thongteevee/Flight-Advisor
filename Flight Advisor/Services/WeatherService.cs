@@ -36,7 +36,7 @@ namespace FlightAdvisor.Services
         }
 
         /// <summary>
-        /// Fetch METAR data for an airport
+        /// Fetch METAR data for an airport - HANDLES BOTH ARRAY AND OBJECT RESPONSES
         /// </summary>
         public async Task<MetarData> GetMetarAsync(string icao)
         {
@@ -48,9 +48,29 @@ namespace FlightAdvisor.Services
                 // Log the raw response for debugging
                 System.Diagnostics.Debug.WriteLine($"Raw METAR Response: {response}");
 
-                // Parse the JSON array
-                var metarArray = JsonSerializer.Deserialize<List<MetarData>>(response, JsonOptions);
-                return metarArray?.FirstOrDefault();
+                var jsonDoc = JsonDocument.Parse(response);
+
+                // Handle both array [{...}] and single object {...} responses
+                if (jsonDoc.RootElement.ValueKind == JsonValueKind.Array)
+                {
+                    if (jsonDoc.RootElement.GetArrayLength() == 0)
+                        return null;
+
+                    // Parse as array and return first element
+                    var metarArray = JsonSerializer.Deserialize<List<MetarData>>(response, JsonOptions);
+                    return metarArray?.FirstOrDefault();
+                }
+                else if (jsonDoc.RootElement.ValueKind == JsonValueKind.Object)
+                {
+                    // Parse as single object
+                    var metar = JsonSerializer.Deserialize<MetarData>(response, JsonOptions);
+                    return metar;
+                }
+                else
+                {
+                    System.Diagnostics.Debug.WriteLine($"Unexpected METAR JSON format: {jsonDoc.RootElement.ValueKind}");
+                    return null;
+                }
             }
             catch (HttpRequestException ex)
             {
@@ -58,7 +78,7 @@ namespace FlightAdvisor.Services
             }
             catch (JsonException ex)
             {
-                throw new WeatherServiceException($"Failed to fetch METAR for {icao}: Invalid response format - {ex.Message}\nInner: {ex.InnerException?.Message}", ex);
+                throw new WeatherServiceException($"Failed to fetch METAR for {icao}: Invalid response format - {ex.Message}", ex);
             }
             catch (Exception ex)
             {
