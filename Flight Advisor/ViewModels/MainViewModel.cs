@@ -188,10 +188,11 @@ namespace FlightAdvisor.ViewModels
             {
                 this.RaiseAndSetIfChanged(ref _selectedRunway, value);
 
-                // Update selected runway data
+                // Update selected runway data when manually changed
                 if (!string.IsNullOrEmpty(value) && value != "Auto-Selected")
                 {
                     SelectedRunwayData = _cachedRunwayData.FirstOrDefault(r => r.DisplayName == value);
+                    ShowAutoSelectedInfo = false; // Hide auto-select info when manually selected
                 }
                 else
                 {
@@ -238,11 +239,13 @@ namespace FlightAdvisor.ViewModels
             get => _showAutoSelectedInfo;
             set => this.RaiseAndSetIfChanged(ref _showAutoSelectedInfo, value);
         }
+
         public RunwayData SelectedRunwayData
         {
             get => _selectedRunwayData;
             set => this.RaiseAndSetIfChanged(ref _selectedRunwayData, value);
         }
+
         public FlightDecision CurrentDecision
         {
             get => _currentDecision;
@@ -735,12 +738,24 @@ namespace FlightAdvisor.ViewModels
         /// </summary>
         private int ParseRunwayHeading(string runway)
         {
+            // Handle display name format "09 (090°)"
+            if (runway.Contains("(") && runway.Contains("°"))
+            {
+                var startIdx = runway.IndexOf("(") + 1;
+                var endIdx = runway.IndexOf("°");
+                var headingStr = runway.Substring(startIdx, endIdx - startIdx);
+                if (int.TryParse(headingStr, out var heading))
+                {
+                    return heading;
+                }
+            }
+
             // Extract numeric part from runway designator (e.g., "09L" -> "09")
             var numericPart = new string(runway.TakeWhile(char.IsDigit).ToArray());
 
-            if (int.TryParse(numericPart, out var heading))
+            if (int.TryParse(numericPart, out var rwyNum))
             {
-                return heading * 10; // Convert to degrees (09 -> 090°)
+                return rwyNum * 10; // Convert to degrees (09 -> 090°)
             }
 
             return 0;
@@ -773,9 +788,10 @@ namespace FlightAdvisor.ViewModels
                     return;
                 }
 
-                // Load runways and auto-select best one based on wind
+                // Load runways and cache them
                 var runways = await FetchRunwayDataAsync(DepartureIcao);
-                _cachedRunwayData = runways; // Cache the runway data
+                _cachedRunwayData = runways;
+
                 DepartureRunways.Clear();
                 DepartureRunways.Add("Auto-Selected");
 
@@ -786,21 +802,38 @@ namespace FlightAdvisor.ViewModels
                         DepartureRunways.Add(rwy.DisplayName);
                     }
 
-                    // If wind data is available and user has "Auto-Selected", pick best runway
-                    if (metar.WindDirection.HasValue && metar.WindSpeed.HasValue)
+                    // Auto-select best runway if wind data is available
+                    if (metar.WindDirection.HasValue && metar.WindSpeed.HasValue && metar.WindSpeed.Value > 0)
                     {
-                        var bestRunway = SelectBestRunway(runways, metar.WindDirection.Value, metar.WindSpeed.Value);
-                        SelectedRunway = bestRunway;
+                        var bestRunwayName = SelectBestRunway(runways, metar.WindDirection.Value, metar.WindSpeed.Value);
+                        SelectedRunway = bestRunwayName;
+
+                        // Set the runway data and show auto-select info
+                        SelectedRunwayData = runways.FirstOrDefault(r => r.DisplayName == bestRunwayName);
+
+                        var bestRunwayDesignator = SelectedRunwayData?.Designator ?? "best runway";
+                        var headwindComp = CalculateHeadwindComponent(
+                            metar.WindDirection.Value,
+                            metar.WindSpeed.Value,
+                            (int)(SelectedRunwayData?.TrueHeading ?? 0)
+                        );
+
+                        AutoSelectedRunwayInfo = $"Auto-selected {bestRunwayDesignator} (best headwind: {headwindComp}kts)";
+                        ShowAutoSelectedInfo = true;
                     }
                     else
                     {
-                        // No wind data, default to Auto-Selected
-                        SelectedRunway = "Auto-Selected";
+                        // No usable wind data, use first runway as default
+                        SelectedRunway = runways.First().DisplayName;
+                        SelectedRunwayData = runways.First();
+                        AutoSelectedRunwayInfo = "No significant wind - using first available runway";
+                        ShowAutoSelectedInfo = true;
                     }
                 }
                 else
                 {
                     SelectedRunway = "Auto-Selected";
+                    SelectedRunwayData = null;
                 }
 
                 // Fetch TAF data (optional)
