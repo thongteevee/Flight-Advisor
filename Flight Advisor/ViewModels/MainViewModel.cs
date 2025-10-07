@@ -457,7 +457,7 @@ namespace FlightAdvisor.ViewModels
         }
 
         /// <summary>
-        /// Fetch runway data from NOAA Aviation Weather API - FIXED VERSION
+        /// Fetch runway data from NOAA Aviation Weather API - COMPLETE FIXED VERSION
         /// </summary>
         private async Task<List<RunwayData>> FetchRunwayDataAsync(string icao)
         {
@@ -576,17 +576,15 @@ namespace FlightAdvisor.ViewModels
                                     });
                                 }
 
-                                // Second runway direction (reciprocal)
+                                // Second runway direction (reciprocal) - CALCULATE THE RECIPROCAL HEADING
                                 if (parts.Length > 1 && !string.IsNullOrWhiteSpace(parts[1]))
                                 {
                                     var rwy2 = parts[1].Trim();
-                                    var heading2 = ParseRunwayHeading(rwy2);
 
-                                    // If we have alignment for first runway, calculate reciprocal
-                                    if (alignment > 0)
-                                    {
-                                        heading2 = (int)((alignment + 180) % 360);
-                                    }
+                                    // Calculate reciprocal heading (add 180°, wrap at 360°)
+                                    var heading2 = alignment > 0
+                                        ? (alignment + 180) % 360
+                                        : ParseRunwayHeading(rwy2);
 
                                     runwayList.Add(new RunwayData
                                     {
