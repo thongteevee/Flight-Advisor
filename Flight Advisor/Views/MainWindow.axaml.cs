@@ -101,13 +101,15 @@ namespace FlightAdvisor.Views
 
         private void ToggleTheme_Click(object sender, Avalonia.Interactivity.RoutedEventArgs e)
         {
-            if (Application.Current is App app)
+            // Toggle the theme on THIS WINDOW, not the App
+            var currentTheme = this.RequestedThemeVariant;
+            this.RequestedThemeVariant = currentTheme == Avalonia.Styling.ThemeVariant.Dark
+                ? Avalonia.Styling.ThemeVariant.Light
+                : Avalonia.Styling.ThemeVariant.Dark;
+
+            if (DataContext is MainViewModel vm)
             {
-                app.ToggleTheme();
-                if (DataContext is MainViewModel vm)
-                {
-                    vm.IsDarkMode = app.IsDarkMode;
-                }
+                vm.IsDarkMode = this.RequestedThemeVariant == Avalonia.Styling.ThemeVariant.Dark;
             }
         }
 
