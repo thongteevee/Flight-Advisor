@@ -22,6 +22,17 @@ namespace FlightAdvisor.ViewModels
         private readonly DecisionEngine _decisionEngine;
         private AircraftDatabase _aircraftDatabase;
 
+        // NEW: Cached weather data for all airports
+        private MetarData _departureMetar;
+        private MetarData _arrivalMetar;
+        private MetarData _alternateMetar;
+        private TafData _departureTaf;
+        private TafData _arrivalTaf;
+        private TafData _alternateTaf;
+        private List<RunwayData> _departureRunwayData = new List<RunwayData>();
+        private List<RunwayData> _arrivalRunwayData = new List<RunwayData>();
+        private List<RunwayData> _alternateRunwayData = new List<RunwayData>();
+
         // Observable backing fields
         private string _selectedFlightType;
         private Aircraft _selectedAircraft;
@@ -52,6 +63,11 @@ namespace FlightAdvisor.ViewModels
         private RunwayData _selectedRunwayData;
         private List<RunwayData> _cachedRunwayData = new List<RunwayData>();
 
+        // NEW: Airport switching properties
+        private string _currentAirportType = "Departure";
+        private bool _showArrivalButton;
+        private bool _showAlternateButton;
+
         #endregion
 
         #region Constructor
@@ -77,6 +93,7 @@ namespace FlightAdvisor.ViewModels
             ToggleAdvancedModeCommand = ReactiveCommand.Create(ToggleAdvancedMode);
             RefreshWeatherCommand = ReactiveCommand.CreateFromTask(RefreshWeatherAsync);
             ToggleThemeCommand = ReactiveCommand.Create(ToggleTheme);
+            // SwitchToAirportCommand removed - using direct method calls instead
 
             // Initialize collections
             FlightTypes = new ObservableCollection<string>
@@ -137,6 +154,9 @@ namespace FlightAdvisor.ViewModels
             {
                 this.RaiseAndSetIfChanged(ref _arrivalIcao, value?.ToUpper());
 
+                // NEW: Show/hide arrival button based on whether ICAO is entered
+                ShowArrivalButton = !string.IsNullOrWhiteSpace(value);
+
                 // Auto-load runways when ICAO code is complete (4 characters)
                 if (!string.IsNullOrEmpty(value) && value.Length == 4)
                 {
@@ -148,7 +168,32 @@ namespace FlightAdvisor.ViewModels
         public string AlternateIcao
         {
             get => _alternateIcao;
-            set => this.RaiseAndSetIfChanged(ref _alternateIcao, value?.ToUpper());
+            set
+            {
+                this.RaiseAndSetIfChanged(ref _alternateIcao, value?.ToUpper());
+
+                // NEW: Show/hide alternate button based on whether ICAO is entered
+                ShowAlternateButton = !string.IsNullOrWhiteSpace(value);
+            }
+        }
+
+        // NEW: Airport switching properties
+        public string CurrentAirportType
+        {
+            get => _currentAirportType;
+            set => this.RaiseAndSetIfChanged(ref _currentAirportType, value);
+        }
+
+        public bool ShowArrivalButton
+        {
+            get => _showArrivalButton;
+            set => this.RaiseAndSetIfChanged(ref _showArrivalButton, value);
+        }
+
+        public bool ShowAlternateButton
+        {
+            get => _showAlternateButton;
+            set => this.RaiseAndSetIfChanged(ref _showAlternateButton, value);
         }
 
         public int TakeoffWeight
@@ -315,6 +360,7 @@ namespace FlightAdvisor.ViewModels
         public ReactiveCommand<Unit, Unit> ToggleAdvancedModeCommand { get; }
         public ReactiveCommand<Unit, Unit> RefreshWeatherCommand { get; }
         public ReactiveCommand<Unit, Unit> ToggleThemeCommand { get; }
+        public ReactiveCommand<string, Unit> SwitchToAirportCommand { get; } // NEW
 
         #endregion
 
@@ -390,6 +436,123 @@ namespace FlightAdvisor.ViewModels
                 app.ToggleTheme();
                 IsDarkMode = app.IsDarkMode;
             }
+        }
+
+        /// <summary>
+        /// NEW: Switch to display different airport weather
+        /// </summary>
+        private async Task SwitchToAirportAsync(string airportType)
+        {
+            MetarData metar = null;
+            TafData taf = null;
+            List<RunwayData> runways = null;
+            string icao = null;
+
+            // Select the appropriate cached data
+            switch (airportType)
+            {
+                case "Departure":
+                    metar = _departureMetar;
+                    taf = _departureTaf;
+                    runways = _departureRunwayData;
+                    icao = DepartureIcao;
+                    break;
+                case "Arrival":
+                    metar = _arrivalMetar;
+                    taf = _arrivalTaf;
+                    runways = _arrivalRunwayData;
+                    icao = ArrivalIcao;
+                    break;
+                case "Alternate":
+                    metar = _alternateMetar;
+                    taf = _alternateTaf;
+                    runways = _alternateRunwayData;
+                    icao = AlternateIcao;
+                    break;
+            }
+
+            // Validate we have data for this airport
+            if (metar == null)
+            {
+                ErrorMessage = $"No weather data available for {airportType} airport. Click 'Check Weather Conditions' to fetch data.";
+                return;
+            }
+
+            CurrentAirportType = airportType;
+            ErrorMessage = "";
+
+            // Update runways display
+            DepartureRunways.Clear();
+            DepartureRunways.Add("Auto-Selected");
+
+            if (runways != null && runways.Any())
+            {
+                foreach (var rwy in runways)
+                {
+                    DepartureRunways.Add(rwy.DisplayName);
+                }
+
+                // Auto-select best runway if wind data is available
+                if (metar.WindDirection.HasValue && metar.WindSpeed.HasValue && metar.WindSpeed.Value > 0)
+                {
+                    var bestRunwayName = SelectBestRunway(runways, metar.WindDirection.Value, metar.WindSpeed.Value);
+                    SelectedRunway = bestRunwayName;
+                    SelectedRunwayData = runways.FirstOrDefault(r => r.DisplayName == bestRunwayName);
+
+                    var bestRunwayDesignator = SelectedRunwayData?.Designator ?? "best runway";
+                    var headwindComp = CalculateHeadwindComponent(
+                        metar.WindDirection.Value,
+                        metar.WindSpeed.Value,
+                        (int)(SelectedRunwayData?.TrueHeading ?? 0)
+                    );
+
+                    AutoSelectedRunwayInfo = $"Auto-selected {bestRunwayDesignator} (best headwind: {headwindComp}kts)";
+                    ShowAutoSelectedInfo = true;
+                }
+                else
+                {
+                    SelectedRunway = runways.First().DisplayName;
+                    SelectedRunwayData = runways.First();
+                    AutoSelectedRunwayInfo = "No significant wind - using first available runway";
+                    ShowAutoSelectedInfo = true;
+                }
+            }
+            else
+            {
+                SelectedRunway = "Auto-Selected";
+                SelectedRunwayData = null;
+            }
+
+            _cachedRunwayData = runways ?? new List<RunwayData>();
+
+            // Build flight information
+            var flightInfo = new FlightInfo
+            {
+                FlightType = SelectedFlightType,
+                SelectedAircraft = SelectedAircraft,
+                DepartureIcao = icao,
+                SelectedRunway = SelectedRunway,
+                TakeoffWeight = TakeoffWeight,
+                LandingWeight = LandingWeight,
+                SoulsOnBoard = SoulsOnBoard,
+                FuelPlanned = FuelPlanned,
+                Route = Route
+            };
+
+            // Evaluate decision for this airport
+            CurrentDecision = _decisionEngine.EvaluateFlight(metar, taf, flightInfo);
+            WeatherSummary = CurrentDecision.WeatherSummary;
+
+            // Add TAF to weather summary if available
+            if (taf != null)
+            {
+                WeatherSummary.RawTaf = taf.RawTaf;
+            }
+
+            // Recalculate wind components
+            RecalculateWindComponents();
+
+            ShowResults = true;
         }
 
         /// <summary>
@@ -807,7 +970,7 @@ namespace FlightAdvisor.ViewModels
         }
 
         /// <summary>
-        /// Main weather check operation
+        /// Main weather check operation - NOW FETCHES ALL AIRPORTS
         /// </summary>
         private async Task CheckWeatherAsync()
         {
@@ -824,106 +987,80 @@ namespace FlightAdvisor.ViewModels
                     return;
                 }
 
-                // Fetch METAR data
-                var metar = await _weatherService.GetMetarAsync(DepartureIcao);
+                // FETCH DEPARTURE AIRPORT (required)
+                _departureMetar = await _weatherService.GetMetarAsync(DepartureIcao);
 
-                if (metar == null)
+                if (_departureMetar == null)
                 {
                     ErrorMessage = $"Unable to fetch weather data for {DepartureIcao}. Please verify the airport code and try again.";
                     return;
                 }
 
-                // Load runways and cache them
-                var runways = await FetchRunwayDataAsync(DepartureIcao);
-                _cachedRunwayData = runways;
-
-                DepartureRunways.Clear();
-                DepartureRunways.Add("Auto-Selected");
-
-                if (runways.Any())
-                {
-                    foreach (var rwy in runways)
-                    {
-                        DepartureRunways.Add(rwy.DisplayName);
-                    }
-
-                    // Auto-select best runway if wind data is available
-                    if (metar.WindDirection.HasValue && metar.WindSpeed.HasValue && metar.WindSpeed.Value > 0)
-                    {
-                        var bestRunwayName = SelectBestRunway(runways, metar.WindDirection.Value, metar.WindSpeed.Value);
-                        SelectedRunway = bestRunwayName;
-
-                        // Set the runway data and show auto-select info
-                        SelectedRunwayData = runways.FirstOrDefault(r => r.DisplayName == bestRunwayName);
-
-                        var bestRunwayDesignator = SelectedRunwayData?.Designator ?? "best runway";
-                        var headwindComp = CalculateHeadwindComponent(
-                            metar.WindDirection.Value,
-                            metar.WindSpeed.Value,
-                            (int)(SelectedRunwayData?.TrueHeading ?? 0)
-                        );
-
-                        AutoSelectedRunwayInfo = $"Auto-selected {bestRunwayDesignator} (best headwind: {headwindComp}kts)";
-                        ShowAutoSelectedInfo = true;
-                    }
-                    else
-                    {
-                        // No usable wind data, use first runway as default
-                        SelectedRunway = runways.First().DisplayName;
-                        SelectedRunwayData = runways.First();
-                        AutoSelectedRunwayInfo = "No significant wind - using first available runway";
-                        ShowAutoSelectedInfo = true;
-                    }
-                }
-                else
-                {
-                    SelectedRunway = "Auto-Selected";
-                    SelectedRunwayData = null;
-                }
-
-                // Fetch TAF data (optional)
-                TafData taf = null;
+                // Fetch departure TAF (optional)
                 try
                 {
-                    taf = await _weatherService.GetTafAsync(DepartureIcao);
+                    _departureTaf = await _weatherService.GetTafAsync(DepartureIcao);
                 }
                 catch
                 {
-                    // TAF is optional - continue without it
+                    _departureTaf = null; // TAF is optional
                 }
 
-                // Build flight information object
-                var flightInfo = new FlightInfo
-                {
-                    FlightType = SelectedFlightType,
-                    SelectedAircraft = SelectedAircraft,
-                    DepartureIcao = DepartureIcao,
-                    ArrivalIcao = ArrivalIcao,
-                    AlternateIcao = AlternateIcao,
-                    TakeoffWeight = TakeoffWeight,
-                    LandingWeight = LandingWeight,
-                    SoulsOnBoard = SoulsOnBoard,
-                    FuelPlanned = FuelPlanned,
-                    Route = Route,
-                    SelectedRunway = SelectedRunway
-                };
+                // Load departure runways
+                _departureRunwayData = await FetchRunwayDataAsync(DepartureIcao);
 
-                // Evaluate flight decision
-                CurrentDecision = _decisionEngine.EvaluateFlight(metar, taf, flightInfo);
-                WeatherSummary = CurrentDecision.WeatherSummary;
-
-                // Add TAF to weather summary if available
-                if (taf != null)
+                // FETCH ARRIVAL AIRPORT (if provided)
+                if (!string.IsNullOrWhiteSpace(ArrivalIcao))
                 {
-                    WeatherSummary.RawTaf = taf.RawTaf;
+                    try
+                    {
+                        _arrivalMetar = await _weatherService.GetMetarAsync(ArrivalIcao);
+                        try
+                        {
+                            _arrivalTaf = await _weatherService.GetTafAsync(ArrivalIcao);
+                        }
+                        catch
+                        {
+                            _arrivalTaf = null;
+                        }
+                        _arrivalRunwayData = await FetchRunwayDataAsync(ArrivalIcao);
+                    }
+                    catch (Exception ex)
+                    {
+                        System.Diagnostics.Debug.WriteLine($"Failed to fetch arrival weather: {ex.Message}");
+                        // Continue - arrival is optional
+                    }
                 }
 
-                // Update display
+                // FETCH ALTERNATE AIRPORT (if provided)
+                if (!string.IsNullOrWhiteSpace(AlternateIcao))
+                {
+                    try
+                    {
+                        _alternateMetar = await _weatherService.GetMetarAsync(AlternateIcao);
+                        try
+                        {
+                            _alternateTaf = await _weatherService.GetTafAsync(AlternateIcao);
+                        }
+                        catch
+                        {
+                            _alternateTaf = null;
+                        }
+                        _alternateRunwayData = await FetchRunwayDataAsync(AlternateIcao);
+                    }
+                    catch (Exception ex)
+                    {
+                        System.Diagnostics.Debug.WriteLine($"Failed to fetch alternate weather: {ex.Message}");
+                        // Continue - alternate is optional
+                    }
+                }
+
+                // Display departure airport by default
+                CurrentAirportType = "Departure";
+                await DisplayAirportWeatherData(_departureMetar, _departureTaf, _departureRunwayData, DepartureIcao);
+
                 LastUpdateTime = DateTime.Now.ToString("HH:mm:ss");
                 ShowResults = true;
-
-                // Recalculate wind components for selected runway
-                RecalculateWindComponents();
             }
             catch (WeatherServiceException ex)
             {
@@ -937,6 +1074,88 @@ namespace FlightAdvisor.ViewModels
             {
                 IsLoading = false;
             }
+        }
+
+        /// <summary>
+        /// Helper method to display airport weather data
+        /// </summary>
+        private async Task DisplayAirportWeatherData(MetarData metar, TafData taf, List<RunwayData> runways, string icao)
+        {
+            // Update runways display
+            DepartureRunways.Clear();
+            DepartureRunways.Add("Auto-Selected");
+
+            _cachedRunwayData = runways ?? new List<RunwayData>();
+
+            if (runways != null && runways.Any())
+            {
+                foreach (var rwy in runways)
+                {
+                    DepartureRunways.Add(rwy.DisplayName);
+                }
+
+                // Auto-select best runway if wind data is available
+                if (metar.WindDirection.HasValue && metar.WindSpeed.HasValue && metar.WindSpeed.Value > 0)
+                {
+                    var bestRunwayName = SelectBestRunway(runways, metar.WindDirection.Value, metar.WindSpeed.Value);
+                    SelectedRunway = bestRunwayName;
+
+                    // Set the runway data and show auto-select info
+                    SelectedRunwayData = runways.FirstOrDefault(r => r.DisplayName == bestRunwayName);
+
+                    var bestRunwayDesignator = SelectedRunwayData?.Designator ?? "best runway";
+                    var headwindComp = CalculateHeadwindComponent(
+                        metar.WindDirection.Value,
+                        metar.WindSpeed.Value,
+                        (int)(SelectedRunwayData?.TrueHeading ?? 0)
+                    );
+
+                    AutoSelectedRunwayInfo = $"Auto-selected {bestRunwayDesignator} (best headwind: {headwindComp}kts)";
+                    ShowAutoSelectedInfo = true;
+                }
+                else
+                {
+                    // No usable wind data, use first runway as default
+                    SelectedRunway = runways.First().DisplayName;
+                    SelectedRunwayData = runways.First();
+                    AutoSelectedRunwayInfo = "No significant wind - using first available runway";
+                    ShowAutoSelectedInfo = true;
+                }
+            }
+            else
+            {
+                SelectedRunway = "Auto-Selected";
+                SelectedRunwayData = null;
+            }
+
+            // Build flight information object
+            var flightInfo = new FlightInfo
+            {
+                FlightType = SelectedFlightType,
+                SelectedAircraft = SelectedAircraft,
+                DepartureIcao = icao,
+                ArrivalIcao = ArrivalIcao,
+                AlternateIcao = AlternateIcao,
+                TakeoffWeight = TakeoffWeight,
+                LandingWeight = LandingWeight,
+                SoulsOnBoard = SoulsOnBoard,
+                FuelPlanned = FuelPlanned,
+                Route = Route,
+                SelectedRunway = SelectedRunway
+            };
+
+            // Evaluate flight decision
+            CurrentDecision = _decisionEngine.EvaluateFlight(metar, taf, flightInfo);
+            WeatherSummary = CurrentDecision.WeatherSummary;
+
+            // Add TAF to weather summary if available
+            if (taf != null)
+            {
+                WeatherSummary.RawTaf = taf.RawTaf;
+            }
+
+            // Recalculate wind components for selected runway
+            RecalculateWindComponents();
         }
 
         /// <summary>

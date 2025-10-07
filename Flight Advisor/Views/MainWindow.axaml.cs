@@ -110,5 +110,29 @@ namespace FlightAdvisor.Views
                 }
             }
         }
+
+        private async void SwitchToDeparture_Click(object sender, Avalonia.Interactivity.RoutedEventArgs e)
+        {
+            if (DataContext is MainViewModel vm)
+            {
+                await vm.SwitchToAirportAsync("Departure");
+            }
+        }
+
+        private async void SwitchToArrival_Click(object sender, Avalonia.Interactivity.RoutedEventArgs e)
+        {
+            if (DataContext is MainViewModel vm)
+            {
+                await vm.SwitchToAirportAsync("Arrival");
+            }
+        }
+
+        private async void SwitchToAlternate_Click(object sender, Avalonia.Interactivity.RoutedEventArgs e)
+        {
+            if (DataContext is MainViewModel vm)
+            {
+                await vm.SwitchToAirportAsync("Alternate");
+            }
+        }
     }
 }
