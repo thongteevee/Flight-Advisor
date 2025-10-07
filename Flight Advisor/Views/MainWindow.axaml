@@ -859,7 +859,7 @@
 					BoxShadow="0 4 12 0 #00000040">
 
 				<Button Click="ToggleTheme_Click"
-						ToolTip.Tip="Toggle Dark/Light Mode"
+						ToolTip.Tip="{Binding ThemeText}"
 						Width="56"
 						Height="56"
 						CornerRadius="28"
@@ -878,7 +878,8 @@
 						</Style>
 					</Button.Styles>
 
-					<TextBlock Text="{Binding IsDarkMode, Converter={StaticResource BoolToThemeIconConverter}}"
+					<!-- Direct binding to ViewModel property - no converter needed -->
+					<TextBlock Text="{Binding ThemeIcon}"
 							   FontSize="24"
 							   VerticalAlignment="Center"
 							   HorizontalAlignment="Center"/>
