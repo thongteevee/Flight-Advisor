@@ -46,6 +46,11 @@ namespace FlightAdvisor.ViewModels
         private string _headwindDisplay;
         private string _headwindColor;
         private int? _crosswindComponent;
+        private string _crosswindColor;
+        private string _autoSelectedRunwayInfo;
+        private bool _showAutoSelectedInfo;
+        private RunwayData _selectedRunwayData;
+        private List<RunwayData> _cachedRunwayData = new List<RunwayData>();
 
         #endregion
 
@@ -182,6 +187,17 @@ namespace FlightAdvisor.ViewModels
             set
             {
                 this.RaiseAndSetIfChanged(ref _selectedRunway, value);
+
+                // Update selected runway data
+                if (!string.IsNullOrEmpty(value) && value != "Auto-Selected")
+                {
+                    SelectedRunwayData = _cachedRunwayData.FirstOrDefault(r => r.DisplayName == value);
+                }
+                else
+                {
+                    SelectedRunwayData = null;
+                }
+
                 // Automatically recalculate wind components when runway changes
                 RecalculateWindComponents();
             }
@@ -205,6 +221,28 @@ namespace FlightAdvisor.ViewModels
             set => this.RaiseAndSetIfChanged(ref _crosswindComponent, value);
         }
 
+        public string CrosswindColor
+        {
+            get => _crosswindColor;
+            set => this.RaiseAndSetIfChanged(ref _crosswindColor, value);
+        }
+
+        public string AutoSelectedRunwayInfo
+        {
+            get => _autoSelectedRunwayInfo;
+            set => this.RaiseAndSetIfChanged(ref _autoSelectedRunwayInfo, value);
+        }
+
+        public bool ShowAutoSelectedInfo
+        {
+            get => _showAutoSelectedInfo;
+            set => this.RaiseAndSetIfChanged(ref _showAutoSelectedInfo, value);
+        }
+        public RunwayData SelectedRunwayData
+        {
+            get => _selectedRunwayData;
+            set => this.RaiseAndSetIfChanged(ref _selectedRunwayData, value);
+        }
         public FlightDecision CurrentDecision
         {
             get => _currentDecision;
@@ -443,11 +481,25 @@ namespace FlightAdvisor.ViewModels
                         {
                             string id = null;
                             double heading = 0;
+                            string dimension = null;
+                            string surface = null;
 
                             // Try to get the runway ID
                             if (runway.TryGetProperty("id", out var idElement))
                             {
                                 id = idElement.GetString();
+                            }
+
+                            // Try to get dimension
+                            if (runway.TryGetProperty("dimension", out var dimElement))
+                            {
+                                dimension = dimElement.GetString();
+                            }
+
+                            // Try to get surface
+                            if (runway.TryGetProperty("surface", out var surfElement))
+                            {
+                                surface = surfElement.GetString();
                             }
 
                             // Try to get the alignment/heading
@@ -484,7 +536,9 @@ namespace FlightAdvisor.ViewModels
                                         {
                                             Designator = rwy1,
                                             TrueHeading = heading1,
-                                            DisplayName = $"{rwy1} ({heading1}°)"
+                                            DisplayName = $"{rwy1} ({heading1}°)",
+                                            Dimension = dimension,
+                                            Surface = surface
                                         });
                                     }
 
@@ -497,7 +551,9 @@ namespace FlightAdvisor.ViewModels
                                         {
                                             Designator = rwy2,
                                             TrueHeading = heading2,
-                                            DisplayName = $"{rwy2} ({heading2}°)"
+                                            DisplayName = $"{rwy2} ({heading2}°)",
+                                            Dimension = dimension,
+                                            Surface = surface
                                         });
                                     }
                                 }
@@ -509,7 +565,9 @@ namespace FlightAdvisor.ViewModels
                                     {
                                         Designator = id,
                                         TrueHeading = rwyHeading,
-                                        DisplayName = rwyHeading > 0 ? $"{id} ({rwyHeading}°)" : id
+                                        DisplayName = rwyHeading > 0 ? $"{id} ({rwyHeading}°)" : id,
+                                        Dimension = dimension,
+                                        Surface = surface
                                     });
                                 }
                             }
@@ -575,6 +633,7 @@ namespace FlightAdvisor.ViewModels
                 HeadwindDisplay = null;
                 HeadwindColor = "#22c55e";
                 CrosswindComponent = null;
+                CrosswindColor = "#22c55e";
                 return;
             }
 
@@ -588,10 +647,19 @@ namespace FlightAdvisor.ViewModels
                     WeatherSummary.WindSpeed.Value
                 );
                 runwayHeading = bestRunway;
+
+                // Find the runway name from the heading
+                var runwayName = DepartureRunways
+                    .Where(r => r != "Auto-Selected")
+                    .FirstOrDefault(r => ParseRunwayHeading(r) == bestRunway);
+
+                AutoSelectedRunwayInfo = $"Using {runwayName ?? "best runway"} for calculations";
+                ShowAutoSelectedInfo = true;
             }
             else
             {
                 runwayHeading = ParseRunwayHeading(SelectedRunway);
+                ShowAutoSelectedInfo = false;
             }
 
             var headwindValue = _weatherService.CalculateHeadwind(
@@ -613,10 +681,26 @@ namespace FlightAdvisor.ViewModels
                 HeadwindColor = "#22c55e"; // Green
             }
 
-            CrosswindComponent = _weatherService.CalculateCrosswind(
+            var crosswindValue = _weatherService.CalculateCrosswind(
                 WeatherSummary.WindDirection.Value,
                 WeatherSummary.WindSpeed.Value,
                 runwayHeading);
+
+            CrosswindComponent = crosswindValue;
+
+            // Set crosswind color based on thresholds
+            if (crosswindValue < 10)
+            {
+                CrosswindColor = "#22c55e"; // Green - safe
+            }
+            else if (crosswindValue < 25)
+            {
+                CrosswindColor = "#f59e0b"; // Orange - caution
+            }
+            else
+            {
+                CrosswindColor = "#ef4444"; // Red - dangerous
+            }
         }
 
         /// <summary>
@@ -691,7 +775,7 @@ namespace FlightAdvisor.ViewModels
 
                 // Load runways and auto-select best one based on wind
                 var runways = await FetchRunwayDataAsync(DepartureIcao);
-
+                _cachedRunwayData = runways; // Cache the runway data
                 DepartureRunways.Clear();
                 DepartureRunways.Add("Auto-Selected");
 
@@ -802,7 +886,38 @@ namespace FlightAdvisor.ViewModels
         public double TrueHeading { get; set; }
         public string DisplayName { get; set; }
         public double Reciprocal => (TrueHeading + 180) % 360;
-    }
 
+        // Additional runway details
+        public string Dimension { get; set; }
+        public string Surface { get; set; }
+        public bool IsHelipad => Designator?.StartsWith("H") ?? false;
+        public string RunwayType => IsHelipad ? "Helipad" : "Runway";
+
+        // Parse length from dimension (e.g., "11000x150" -> 11000 ft)
+        public int? LengthFeet
+        {
+            get
+            {
+                if (string.IsNullOrEmpty(Dimension)) return null;
+                var parts = Dimension.Split('x');
+                if (parts.Length > 0 && int.TryParse(parts[0], out var length))
+                    return length;
+                return null;
+            }
+        }
+
+        // Parse width from dimension (e.g., "11000x150" -> 150 ft)
+        public int? WidthFeet
+        {
+            get
+            {
+                if (string.IsNullOrEmpty(Dimension)) return null;
+                var parts = Dimension.Split('x');
+                if (parts.Length > 1 && int.TryParse(parts[1], out var width))
+                    return width;
+                return null;
+            }
+        }
+    }
     #endregion
 }
