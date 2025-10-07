@@ -146,14 +146,11 @@
 
 			<!-- Header -->
 			<StackPanel Grid.Row="0" Margin="0,0,0,30">
-				<TextBlock Classes="header"
-						   Text="Flight Advisor"
-						   Foreground="{DynamicResource AppText}"/>
+				<TextBlock Classes="header" Text="Flight Advisor"/>
 				<TextBlock Classes="subheader"
-						  Text="Should I Go Flying Today?"
-						  Margin="0,8,0,0"
-						  Foreground="{DynamicResource AppTextSecondary}"
-						  Opacity="0.8"/>
+                          Text="Should I Go Flying Today?"
+                          Margin="0,8,0,0"
+                          Opacity="0.8"/>
 			</StackPanel>
 
 			<!-- Main Input/Output Area -->
