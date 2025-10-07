@@ -45,26 +45,6 @@ namespace FlightAdvisor.ViewModels
         private bool _isDarkMode;
         private int? _headwindComponent;
         private int? _crosswindComponent;
-
-        /// <summary>
-        /// Parse runway heading from runway designator (e.g., "09" -> 090°, "22L" -> 220°)
-        /// </summary>
-        private int ParseRunwayHeading(string runway)
-        {
-            if (string.IsNullOrEmpty(runway))
-                return 0;
-
-            // Extract numeric part from runway designator (e.g., "09L" -> "09", "22" -> "22")
-            var numericPart = new string(runway.TakeWhile(char.IsDigit).ToArray());
-
-            if (int.TryParse(numericPart, out var heading))
-            {
-                return heading * 10; // Convert to degrees (09 -> 090°)
-            }
-
-            return 0;
-        }
-
         #endregion
 
         #region Constructor
