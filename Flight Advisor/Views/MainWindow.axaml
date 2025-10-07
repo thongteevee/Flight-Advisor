@@ -39,6 +39,20 @@
 		<!-- Light Mode Theme Override -->
 		<Style Selector="Window[RequestedThemeVariant=Light]">
 			<Style.Resources>
+				<!--Dirty quick patch-->
+				<SolidColorBrush x:Key="AppBackground" Color="#0a0e1a"/>
+				<SolidColorBrush x:Key="AppGradient1" Color="#0a0e1a"/>
+				<SolidColorBrush x:Key="AppGradient2" Color="#1e293b"/>
+				<SolidColorBrush x:Key="AppSurface" Color="#0f172a"/>
+				<SolidColorBrush x:Key="AppSurface2" Color="#1e293b"/>
+				<SolidColorBrush x:Key="AppBorder" Color="#334155"/>
+				<SolidColorBrush x:Key="AppText" Color="#e0e7ff"/>
+				<SolidColorBrush x:Key="AppTextSecondary" Color="#c7d2fe"/>
+				<SolidColorBrush x:Key="AppTextTertiary" Color="#94a3b8"/>
+				<SolidColorBrush x:Key="AppTextQuaternary" Color="#64748b"/>
+				<SolidColorBrush x:Key="ThemeButtonBg" Color="#1e293b"/>
+				<SolidColorBrush x:Key="ThemeButtonBorder" Color="#334155"/>
+				<!--
 				<SolidColorBrush x:Key="AppBackground" Color="#f8fafc"/>
 				<SolidColorBrush x:Key="AppGradient1" Color="#f8fafc"/>
 				<SolidColorBrush x:Key="AppGradient2" Color="#e2e8f0"/>
@@ -51,6 +65,7 @@
 				<SolidColorBrush x:Key="AppTextQuaternary" Color="#94a3b8"/>
 				<SolidColorBrush x:Key="ThemeButtonBg" Color="#e2e8f0"/>
 				<SolidColorBrush x:Key="ThemeButtonBorder" Color="#cbd5e1"/>
+				-->
 			</Style.Resources>
 		</Style>
 
@@ -845,6 +860,8 @@
 		</Grid>
 
 		<!-- Theme Toggle Button -->
+		<!--Dirty quick patch-->
+		<!--
 		<Canvas HorizontalAlignment="Right"
 				VerticalAlignment="Bottom"
 				Margin="0,0,40,40">
@@ -882,5 +899,6 @@
 				</Button>
 			</Border>
 		</Canvas>
+		-->
 	</Grid>
 </Window>
