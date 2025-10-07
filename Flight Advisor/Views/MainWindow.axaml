@@ -550,10 +550,10 @@
 										<Grid ColumnDefinitions="*,*" ColumnSpacing="16">
 											<StackPanel Grid.Column="0">
 												<TextBlock Classes="label" Text="HEADWIND"/>
-												<TextBlock Text="{Binding HeadwindComponent, StringFormat='{}{0}kts'}"
+												<TextBlock Text="{Binding HeadwindDisplay}"
 														  FontSize="20"
 														  FontWeight="SemiBold"
-														  Foreground="#22c55e"/>
+														  Foreground="{Binding HeadwindColor}"/>
 											</StackPanel>
 
 											<StackPanel Grid.Column="1">

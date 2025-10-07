@@ -43,8 +43,10 @@ namespace FlightAdvisor.ViewModels
         private string _lastUpdateTime;
         private bool _showFlightDetails;
         private bool _isDarkMode;
-        private int? _headwindComponent;
+        private string _headwindDisplay;
+        private string _headwindColor;
         private int? _crosswindComponent;
+
         #endregion
 
         #region Constructor
@@ -185,10 +187,16 @@ namespace FlightAdvisor.ViewModels
             }
         }
 
-        public int? HeadwindComponent
+        public string HeadwindDisplay
         {
-            get => _headwindComponent;
-            set => this.RaiseAndSetIfChanged(ref _headwindComponent, value);
+            get => _headwindDisplay;
+            set => this.RaiseAndSetIfChanged(ref _headwindDisplay, value);
+        }
+
+        public string HeadwindColor
+        {
+            get => _headwindColor;
+            set => this.RaiseAndSetIfChanged(ref _headwindColor, value);
         }
 
         public int? CrosswindComponent
@@ -562,25 +570,80 @@ namespace FlightAdvisor.ViewModels
             if (WeatherSummary == null ||
                 !WeatherSummary.WindDirection.HasValue ||
                 !WeatherSummary.WindSpeed.HasValue ||
-                string.IsNullOrEmpty(SelectedRunway) ||
-                SelectedRunway == "Auto-Selected")
+                string.IsNullOrEmpty(SelectedRunway))
             {
-                HeadwindComponent = null;
+                HeadwindDisplay = null;
+                HeadwindColor = "#22c55e";
                 CrosswindComponent = null;
                 return;
             }
 
-            var runwayHeading = ParseRunwayHeading(SelectedRunway);
+            int runwayHeading;
 
-            HeadwindComponent = _weatherService.CalculateHeadwind(
+            // If "Auto-Selected", find the best runway and use its heading
+            if (SelectedRunway == "Auto-Selected")
+            {
+                var bestRunway = FindBestRunwayHeading(
+                    WeatherSummary.WindDirection.Value,
+                    WeatherSummary.WindSpeed.Value
+                );
+                runwayHeading = bestRunway;
+            }
+            else
+            {
+                runwayHeading = ParseRunwayHeading(SelectedRunway);
+            }
+
+            var headwindValue = _weatherService.CalculateHeadwind(
                 WeatherSummary.WindDirection.Value,
                 WeatherSummary.WindSpeed.Value,
                 runwayHeading);
+
+            // Format headwind display with proper label and color
+            if (headwindValue < 0)
+            {
+                // Tailwind - show as positive value with "Tailwind" label and orange color
+                HeadwindDisplay = $"Tailwind {Math.Abs(headwindValue)}kts";
+                HeadwindColor = "#f59e0b"; // Orange
+            }
+            else
+            {
+                // Headwind - show normally with green color
+                HeadwindDisplay = $"{headwindValue}kts";
+                HeadwindColor = "#22c55e"; // Green
+            }
 
             CrosswindComponent = _weatherService.CalculateCrosswind(
                 WeatherSummary.WindDirection.Value,
                 WeatherSummary.WindSpeed.Value,
                 runwayHeading);
+        }
+
+        /// <summary>
+        /// Find the best runway heading based on wind conditions (most headwind)
+        /// </summary>
+        private int FindBestRunwayHeading(int windDirection, int windSpeed)
+        {
+            // Get all available runways except "Auto-Selected"
+            var availableRunways = DepartureRunways
+                .Where(r => r != "Auto-Selected")
+                .ToList();
+
+            if (!availableRunways.Any())
+                return 0;
+
+            // Find runway with most headwind
+            var bestRunway = availableRunways
+                .Select(runway => new
+                {
+                    Runway = runway,
+                    Heading = ParseRunwayHeading(runway),
+                    HeadwindComponent = CalculateHeadwindComponent(windDirection, windSpeed, ParseRunwayHeading(runway))
+                })
+                .OrderByDescending(x => x.HeadwindComponent)
+                .FirstOrDefault();
+
+            return bestRunway?.Heading ?? 0;
         }
 
         /// <summary>
