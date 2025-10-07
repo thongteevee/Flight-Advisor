@@ -457,7 +457,7 @@ namespace FlightAdvisor.ViewModels
         }
 
         /// <summary>
-        /// Fetch runway data from NOAA Aviation Weather API
+        /// Fetch runway data from NOAA Aviation Weather API - FIXED VERSION
         /// </summary>
         private async Task<List<RunwayData>> FetchRunwayDataAsync(string icao)
         {
@@ -475,7 +475,7 @@ namespace FlightAdvisor.ViewModels
                 var jsonDoc = JsonDocument.Parse(response);
                 JsonElement airportData;
 
-                // Handle both array response [{...}] and single object response {...}
+                // Handle both array [{...}] and single object {...} responses
                 if (jsonDoc.RootElement.ValueKind == JsonValueKind.Array)
                 {
                     if (jsonDoc.RootElement.GetArrayLength() == 0)
@@ -485,96 +485,114 @@ namespace FlightAdvisor.ViewModels
                 }
                 else if (jsonDoc.RootElement.ValueKind == JsonValueKind.Object)
                 {
+                    // Single object response (like VVNB)
                     airportData = jsonDoc.RootElement;
                 }
                 else
                 {
-                    System.Diagnostics.Debug.WriteLine("Unexpected JSON format");
+                    System.Diagnostics.Debug.WriteLine($"Unexpected JSON root type: {jsonDoc.RootElement.ValueKind}");
                     return runwayList;
                 }
 
-                // Now process the airport data
+                // Now process the runways array
                 if (airportData.TryGetProperty("runways", out var runwaysElement) &&
                     runwaysElement.ValueKind == JsonValueKind.Array)
                 {
                     foreach (var runway in runwaysElement.EnumerateArray())
                     {
-                        string id = null;
-                        double heading = 0;
-                        string dimension = null;
-                        string surface = null;
-
-                        // Try to get the runway ID
-                        if (runway.TryGetProperty("id", out var idElement) &&
-                            idElement.ValueKind == JsonValueKind.String)
+                        try
                         {
-                            id = idElement.GetString();
-                        }
+                            string id = null;
+                            double alignment = 0;
+                            string dimension = null;
+                            string surface = null;
 
-                        // Try to get dimension
-                        if (runway.TryGetProperty("dimension", out var dimElement) &&
-                            dimElement.ValueKind == JsonValueKind.String)
-                        {
-                            dimension = dimElement.GetString();
-                        }
-
-                        // Try to get surface
-                        if (runway.TryGetProperty("surface", out var surfElement) &&
-                            surfElement.ValueKind == JsonValueKind.String)
-                        {
-                            surface = surfElement.GetString();
-                        }
-
-                        // Try to get the alignment/heading - handle both number and string
-                        if (runway.TryGetProperty("alignment", out var alignmentElement))
-                        {
-                            if (alignmentElement.ValueKind == JsonValueKind.Number)
+                            // Get runway ID (required)
+                            if (runway.TryGetProperty("id", out var idElement))
                             {
-                                heading = alignmentElement.GetDouble();
-                            }
-                            else if (alignmentElement.ValueKind == JsonValueKind.String)
-                            {
-                                var alignmentStr = alignmentElement.GetString();
-                                if (!string.IsNullOrWhiteSpace(alignmentStr) && alignmentStr != "-")
+                                if (idElement.ValueKind == JsonValueKind.String)
                                 {
-                                    double.TryParse(alignmentStr, out heading);
+                                    id = idElement.GetString();
                                 }
                             }
-                        }
 
-                        // If we have a valid runway ID, process it
-                        if (!string.IsNullOrWhiteSpace(id))
-                        {
-                            // Check if runway ID contains a slash (e.g., "04L/22R", "11/29")
+                            // Skip if no ID
+                            if (string.IsNullOrWhiteSpace(id))
+                                continue;
+
+                            // Get dimension (optional)
+                            if (runway.TryGetProperty("dimension", out var dimElement))
+                            {
+                                if (dimElement.ValueKind == JsonValueKind.String)
+                                {
+                                    dimension = dimElement.GetString();
+                                }
+                            }
+
+                            // Get surface (optional)
+                            if (runway.TryGetProperty("surface", out var surfElement))
+                            {
+                                if (surfElement.ValueKind == JsonValueKind.String)
+                                {
+                                    surface = surfElement.GetString();
+                                }
+                            }
+
+                            // Get alignment - handle both number and string types
+                            if (runway.TryGetProperty("alignment", out var alignmentElement))
+                            {
+                                if (alignmentElement.ValueKind == JsonValueKind.Number)
+                                {
+                                    alignment = alignmentElement.GetDouble();
+                                }
+                                else if (alignmentElement.ValueKind == JsonValueKind.String)
+                                {
+                                    var alignStr = alignmentElement.GetString();
+                                    if (!string.IsNullOrWhiteSpace(alignStr) && alignStr != "-")
+                                    {
+                                        double.TryParse(alignStr, out alignment);
+                                    }
+                                }
+                            }
+
+                            // Process runway ID - handle slash-separated runways (e.g., "11R/29L")
                             if (id.Contains("/"))
                             {
                                 var parts = id.Split('/');
 
-                                // First direction
+                                // First runway direction
                                 if (parts.Length > 0 && !string.IsNullOrWhiteSpace(parts[0]))
                                 {
                                     var rwy1 = parts[0].Trim();
-                                    var heading1 = ParseRunwayHeading(rwy1);
+                                    var heading1 = alignment > 0 ? alignment : ParseRunwayHeading(rwy1);
+
                                     runwayList.Add(new RunwayData
                                     {
                                         Designator = rwy1,
                                         TrueHeading = heading1,
-                                        DisplayName = $"{rwy1} ({heading1}°)",
+                                        DisplayName = $"{rwy1} ({heading1:F0}°)",
                                         Dimension = dimension,
                                         Surface = surface ?? "Unknown"
                                     });
                                 }
 
-                                // Second direction (reciprocal)
+                                // Second runway direction (reciprocal)
                                 if (parts.Length > 1 && !string.IsNullOrWhiteSpace(parts[1]))
                                 {
                                     var rwy2 = parts[1].Trim();
                                     var heading2 = ParseRunwayHeading(rwy2);
+
+                                    // If we have alignment for first runway, calculate reciprocal
+                                    if (alignment > 0)
+                                    {
+                                        heading2 = (int)((alignment + 180) % 360);
+                                    }
+
                                     runwayList.Add(new RunwayData
                                     {
                                         Designator = rwy2,
                                         TrueHeading = heading2,
-                                        DisplayName = $"{rwy2} ({heading2}°)",
+                                        DisplayName = $"{rwy2} ({heading2:F0}°)",
                                         Dimension = dimension,
                                         Surface = surface ?? "Unknown"
                                     });
@@ -582,32 +600,37 @@ namespace FlightAdvisor.ViewModels
                             }
                             else
                             {
-                                // Single runway or helipad
-                                var rwyHeading = heading > 0 ? heading : ParseRunwayHeading(id);
+                                // Single runway (not slash-separated)
+                                var heading = alignment > 0 ? alignment : ParseRunwayHeading(id);
+
                                 runwayList.Add(new RunwayData
                                 {
                                     Designator = id,
-                                    TrueHeading = rwyHeading,
-                                    DisplayName = rwyHeading > 0 ? $"{id} ({rwyHeading}°)" : id,
+                                    TrueHeading = heading,
+                                    DisplayName = heading > 0 ? $"{id} ({heading:F0}°)" : id,
                                     Dimension = dimension,
                                     Surface = surface ?? "Unknown"
                                 });
                             }
                         }
+                        catch (Exception ex)
+                        {
+                            System.Diagnostics.Debug.WriteLine($"Error processing individual runway: {ex.Message}");
+                            // Continue processing other runways
+                        }
                     }
                 }
 
-                System.Diagnostics.Debug.WriteLine($"Found {runwayList.Count} runway options");
+                System.Diagnostics.Debug.WriteLine($"Successfully parsed {runwayList.Count} runway options");
             }
             catch (JsonException ex)
             {
                 System.Diagnostics.Debug.WriteLine($"JSON parsing error: {ex.Message}");
-                // Return empty list on JSON error
+                System.Diagnostics.Debug.WriteLine($"Stack trace: {ex.StackTrace}");
             }
             catch (Exception ex)
             {
                 System.Diagnostics.Debug.WriteLine($"Error fetching runways: {ex.Message}");
-                // Return empty list on error
             }
 
             return runwayList;
