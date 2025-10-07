@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Text.Json.Serialization;
+using FlightAdvisor.Services;
 
 namespace FlightAdvisor.Models
 {
@@ -47,6 +48,7 @@ namespace FlightAdvisor.Models
         public int? WindGust { get; set; }
 
         [JsonPropertyName("visib")]
+        [JsonConverter(typeof(FlexibleVisibilityConverter))]
         public string Visibility { get; set; }
 
         [JsonPropertyName("altim")]

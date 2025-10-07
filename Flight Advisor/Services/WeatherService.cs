@@ -23,7 +23,12 @@ namespace FlightAdvisor.Services
             DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
             AllowTrailingCommas = true,
             ReadCommentHandling = JsonCommentHandling.Skip,
-            Converters = { new FlexibleDateTimeConverter(), new NullableIntConverter(), new NullableLongConverter() }
+            Converters = {
+                new FlexibleDateTimeConverter(),
+                new NullableIntConverter(),
+                new NullableLongConverter(),
+                new FlexibleVisibilityConverter()
+            }
         };
 
         public WeatherService()
@@ -107,7 +112,7 @@ namespace FlightAdvisor.Services
         }
 
         /// <summary>
-        /// Fetch runway information from METAR data
+        /// Fetch runway information from airport data
         /// </summary>
         public async Task<List<string>> GetRunwaysAsync(string icao)
         {
@@ -116,14 +121,19 @@ namespace FlightAdvisor.Services
                 var url = $"/api/data/airport?ids={icao.ToUpper()}&format=json";
                 var response = await _httpClient.GetStringAsync(url);
 
-                var airportArray = JsonDocument.Parse(response);
+                System.Diagnostics.Debug.WriteLine($"Raw Airport Response: {response}");
+
                 var runways = new List<string> { "Auto-Selected" };
 
-                if (airportArray.RootElement.GetArrayLength() > 0)
+                var airportArray = JsonDocument.Parse(response);
+
+                if (airportArray.RootElement.ValueKind == JsonValueKind.Array &&
+                    airportArray.RootElement.GetArrayLength() > 0)
                 {
                     var airportData = airportArray.RootElement[0];
 
-                    if (airportData.TryGetProperty("runways", out var runwaysElement))
+                    if (airportData.TryGetProperty("runways", out var runwaysElement) &&
+                        runwaysElement.ValueKind == JsonValueKind.Array)
                     {
                         foreach (var runway in runwaysElement.EnumerateArray())
                         {
@@ -133,17 +143,32 @@ namespace FlightAdvisor.Services
                                 if (!string.IsNullOrWhiteSpace(id))
                                 {
                                     runways.Add(id);
+                                    System.Diagnostics.Debug.WriteLine($"Found runway: {id}");
                                 }
                             }
                         }
                     }
+                    else
+                    {
+                        System.Diagnostics.Debug.WriteLine("No runways property found or it's not an array");
+                    }
+                }
+                else
+                {
+                    System.Diagnostics.Debug.WriteLine("Response is not an array or is empty");
+                }
+
+                if (runways.Count == 1)
+                {
+                    System.Diagnostics.Debug.WriteLine($"No runways found for {icao}, using Auto-Selected only");
                 }
 
                 return runways;
             }
             catch (Exception ex)
             {
-                throw new WeatherServiceException($"Failed to fetch runways for {icao}", ex);
+                System.Diagnostics.Debug.WriteLine($"Error fetching runways: {ex.Message}");
+                return new List<string> { "Auto-Selected" };
             }
         }
 
@@ -374,6 +399,48 @@ namespace FlightAdvisor.Services
         public override void Write(Utf8JsonWriter writer, DateTime value, JsonSerializerOptions options)
         {
             writer.WriteStringValue(value.ToString("yyyy-MM-ddTHH:mm:ss"));
+        }
+    }
+
+    /// <summary>
+    /// Custom converter for visibility that handles both string and numeric formats
+    /// </summary>
+    public class FlexibleVisibilityConverter : JsonConverter<string>
+    {
+        public override string Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
+        {
+            if (reader.TokenType == JsonTokenType.Null)
+            {
+                return null;
+            }
+
+            if (reader.TokenType == JsonTokenType.String)
+            {
+                return reader.GetString();
+            }
+
+            if (reader.TokenType == JsonTokenType.Number)
+            {
+                // Convert numeric visibility (in statute miles) to string format
+                if (reader.TryGetDouble(out var visibility))
+                {
+                    return $"{visibility:F2}";
+                }
+                if (reader.TryGetInt32(out var visibilityInt))
+                {
+                    return visibilityInt.ToString();
+                }
+            }
+
+            return null;
+        }
+
+        public override void Write(Utf8JsonWriter writer, string value, JsonSerializerOptions options)
+        {
+            if (string.IsNullOrEmpty(value))
+                writer.WriteNullValue();
+            else
+                writer.WriteStringValue(value);
         }
     }
 
