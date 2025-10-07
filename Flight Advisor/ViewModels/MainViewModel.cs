@@ -441,7 +441,7 @@ namespace FlightAdvisor.ViewModels
         /// <summary>
         /// NEW: Switch to display different airport weather
         /// </summary>
-        private async Task SwitchToAirportAsync(string airportType)
+        public async Task SwitchToAirportAsync(string airportType)
         {
             MetarData metar = null;
             TafData taf = null;
