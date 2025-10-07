@@ -10,8 +10,6 @@ using System.Threading.Tasks;
 using ReactiveUI;
 using FlightAdvisor.Models;
 using FlightAdvisor.Services;
-using ReactiveUI;
-using Avalonia.Styling;
 using System.Net.Http;
 
 namespace FlightAdvisor.ViewModels
@@ -55,7 +53,7 @@ namespace FlightAdvisor.ViewModels
         private bool _showResults;
         private string _lastUpdateTime;
         private bool _showFlightDetails;
-        private bool _isDarkMode = true; // Default to dark mode
+        private bool _isDarkMode;
         private string _headwindDisplay;
         private string _headwindColor;
         private int? _crosswindComponent;
@@ -344,16 +342,8 @@ namespace FlightAdvisor.ViewModels
         public bool IsDarkMode
         {
             get => _isDarkMode;
-            set
-            {
-                this.RaiseAndSetIfChanged(ref _isDarkMode, value);
-                this.RaisePropertyChanged(nameof(ThemeIcon));
-                this.RaisePropertyChanged(nameof(ThemeText));
-            }
+            set => this.RaiseAndSetIfChanged(ref _isDarkMode, value);
         }
-
-        public string ThemeIcon => IsDarkMode ? "\u2600\uFE0F" : "\u263E";
-        public string ThemeText => IsDarkMode ? "Light Mode" : "Dark Mode";
 
         // Collections
         public ObservableCollection<string> FlightTypes { get; }
@@ -439,9 +429,13 @@ namespace FlightAdvisor.ViewModels
         /// <summary>
         /// Toggle application theme
         /// </summary>
-        public void ToggleTheme()
+        private void ToggleTheme()
         {
-            IsDarkMode = !IsDarkMode;
+            if (Avalonia.Application.Current is App app)
+            {
+                app.ToggleTheme();
+                IsDarkMode = app.IsDarkMode;
+            }
         }
 
         /// <summary>
