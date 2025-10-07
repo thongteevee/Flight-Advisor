@@ -15,23 +15,28 @@
 
 	<Window.Resources>
 		<converters:BoolToChevronConverter x:Key="BoolToChevronConverter"/>
-		<!-- Theme Resources - Dark Mode (Default) -->
-		<SolidColorBrush x:Key="AppBackground" Color="#0a0e1a"/>
-		<SolidColorBrush x:Key="AppGradient1" Color="#0a0e1a"/>
-		<SolidColorBrush x:Key="AppGradient2" Color="#1e293b"/>
-		<SolidColorBrush x:Key="AppSurface" Color="#0f172a"/>
-		<SolidColorBrush x:Key="AppSurface2" Color="#1e293b"/>
-		<SolidColorBrush x:Key="AppBorder" Color="#334155"/>
-		<SolidColorBrush x:Key="AppText" Color="#e0e7ff"/>
-		<SolidColorBrush x:Key="AppTextSecondary" Color="#c7d2fe"/>
-		<SolidColorBrush x:Key="AppTextTertiary" Color="#94a3b8"/>
-		<SolidColorBrush x:Key="AppTextQuaternary" Color="#64748b"/>
-		<SolidColorBrush x:Key="ThemeButtonBg" Color="#1e293b"/>
-		<SolidColorBrush x:Key="ThemeButtonBorder" Color="#334155"/>
 	</Window.Resources>
 
 	<Window.Styles>
-		<!-- Light Mode Overrides -->
+		<!-- Dark Mode Theme (Default) -->
+		<Style Selector="Window">
+			<Style.Resources>
+				<SolidColorBrush x:Key="AppBackground" Color="#0a0e1a"/>
+				<SolidColorBrush x:Key="AppGradient1" Color="#0a0e1a"/>
+				<SolidColorBrush x:Key="AppGradient2" Color="#1e293b"/>
+				<SolidColorBrush x:Key="AppSurface" Color="#0f172a"/>
+				<SolidColorBrush x:Key="AppSurface2" Color="#1e293b"/>
+				<SolidColorBrush x:Key="AppBorder" Color="#334155"/>
+				<SolidColorBrush x:Key="AppText" Color="#e0e7ff"/>
+				<SolidColorBrush x:Key="AppTextSecondary" Color="#c7d2fe"/>
+				<SolidColorBrush x:Key="AppTextTertiary" Color="#94a3b8"/>
+				<SolidColorBrush x:Key="AppTextQuaternary" Color="#64748b"/>
+				<SolidColorBrush x:Key="ThemeButtonBg" Color="#1e293b"/>
+				<SolidColorBrush x:Key="ThemeButtonBorder" Color="#334155"/>
+			</Style.Resources>
+		</Style>
+
+		<!-- Light Mode Theme Override -->
 		<Style Selector="Window[RequestedThemeVariant=Light]">
 			<Style.Resources>
 				<SolidColorBrush x:Key="AppBackground" Color="#f8fafc"/>
@@ -88,16 +93,35 @@
 			<Setter Property="Padding" Value="16,8"/>
 			<Setter Property="CornerRadius" Value="6"/>
 		</Style>
+
+		<!-- Background gradient theme switching -->
+		<Style Selector="Border#BackgroundGradient">
+			<Setter Property="Background">
+				<LinearGradientBrush StartPoint="0%,0%" EndPoint="100%,100%">
+					<GradientStop Color="#0a0e1a" Offset="0"/>
+					<GradientStop Color="#1e293b" Offset="1"/>
+				</LinearGradientBrush>
+			</Setter>
+		</Style>
+
+		<Style Selector="Window[RequestedThemeVariant=Light] Border#BackgroundGradient">
+			<Setter Property="Background">
+				<LinearGradientBrush StartPoint="0%,0%" EndPoint="100%,100%">
+					<GradientStop Color="#f8fafc" Offset="0"/>
+					<GradientStop Color="#e2e8f0" Offset="1"/>
+				</LinearGradientBrush>
+			</Setter>
+		</Style>
 	</Window.Styles>
 
-	<!-- Part 2: Main Grid and Left Panel -->
+	<!-- Main Grid -->
 	<Grid>
 		<!-- Background with gradient -->
-		<Border>
+		<Border Name="BackgroundGradient">
 			<Border.Background>
 				<LinearGradientBrush StartPoint="0%,0%" EndPoint="100%,100%">
-					<GradientStop Color="{Binding Source={StaticResource AppGradient1}, Path=Color}" Offset="0"/>
-					<GradientStop Color="{Binding Source={StaticResource AppGradient2}, Path=Color}" Offset="1"/>
+					<GradientStop Color="#0a0e1a" Offset="0"/>
+					<GradientStop Color="#1e293b" Offset="1"/>
 				</LinearGradientBrush>
 			</Border.Background>
 		</Border>
@@ -365,37 +389,37 @@
 									</StackPanel>
 								</Border>
 
-						</StackPanel>
-					</ScrollViewer>
+							</StackPanel>
+						</ScrollViewer>
 
 						<!-- BOTTOM SECTION - CHECK WEATHER BUTTON -->
 						<StackPanel Grid.Row="1" Spacing="12" Margin="0,20,0,0">
-						<!-- Check Weather Button -->
-						<Button Content="Check Weather Conditions"
-						        Click="CheckWeather_Click"
-						        HorizontalAlignment="Stretch"
-						        Height="48"
-						        FontSize="16"
-						        FontWeight="SemiBold"
-						        Background="#4f46e5"
-						        Foreground="White"
-						        CornerRadius="8"
-						        Cursor="Hand"
-						        IsVisible="{Binding DepartureIcao, Converter={x:Static StringConverters.IsNotNullOrEmpty}}">
-							<Button.Styles>
-								<Style Selector="Button:pointerover">
-									<Setter Property="Background" Value="#4338ca"/>
-								</Style>
-								<Style Selector="Button:pressed">
-									<Setter Property="Background" Value="#3730a3"/>
-								</Style>
-							</Button.Styles>
-						</Button>
-					</StackPanel>
-				</Grid>
-			</Border>
+							<!-- Check Weather Button -->
+							<Button Content="Check Weather Conditions"
+									Click="CheckWeather_Click"
+									HorizontalAlignment="Stretch"
+									Height="48"
+									FontSize="16"
+									FontWeight="SemiBold"
+									Background="#4f46e5"
+									Foreground="White"
+									CornerRadius="8"
+									Cursor="Hand"
+									IsVisible="{Binding DepartureIcao, Converter={x:Static StringConverters.IsNotNullOrEmpty}}">
+								<Button.Styles>
+									<Style Selector="Button:pointerover">
+										<Setter Property="Background" Value="#4338ca"/>
+									</Style>
+									<Style Selector="Button:pressed">
+										<Setter Property="Background" Value="#3730a3"/>
+									</Style>
+								</Button.Styles>
+							</Button>
+						</StackPanel>
+					</Grid>
+				</Border>
 
-			<!-- Right Panel - Results -->
+				<!-- Right Panel - Results -->
 				<Border Grid.Column="1"
                        Margin="24,0,0,0"
                        Background="{DynamicResource AppSurface}"
@@ -443,7 +467,7 @@
 								            Margin="0,0,0,16"
 								            HorizontalAlignment="Left">
 
-									<!-- Departure Button (Always visible) -->
+									<!-- Departure Button -->
 									<Button Click="SwitchToDeparture_Click"
 									        Height="44"
 									        Padding="24,0"
@@ -452,14 +476,12 @@
 									        FontSize="14"
 									        Cursor="Hand">
 										<Button.Styles>
-											<!-- Default style -->
 											<Style Selector="Button">
 												<Setter Property="Background" Value="{DynamicResource AppSurface2}"/>
 												<Setter Property="Foreground" Value="{DynamicResource AppText}"/>
 												<Setter Property="BorderBrush" Value="{DynamicResource AppBorder}"/>
 												<Setter Property="BorderThickness" Value="1"/>
 											</Style>
-											<!-- Active style when this is the current airport -->
 											<Style Selector="Button:pointerover">
 												<Setter Property="Background" Value="#6366f1"/>
 												<Setter Property="Foreground" Value="White"/>
@@ -472,7 +494,7 @@
 										</StackPanel>
 									</Button>
 
-									<!-- Arrival Button (Shows when arrival ICAO entered) -->
+									<!-- Arrival Button -->
 									<Button Click="SwitchToArrival_Click"
 									        Height="44"
 									        Padding="24,0"
@@ -500,7 +522,7 @@
 										</StackPanel>
 									</Button>
 
-									<!-- Alternate Button (Shows when alternate ICAO entered) -->
+									<!-- Alternate Button -->
 									<Button Click="SwitchToAlternate_Click"
 									        Height="44"
 									        Padding="24,0"
@@ -547,7 +569,7 @@
 												  TextWrapping="Wrap"/>
 									</StackPanel>
 								</Border>
-								
+
 
 								<!-- Weather Summary -->
 								<Border Background="{DynamicResource AppSurface2}"
@@ -555,7 +577,7 @@
 									   Padding="20">
 									<StackPanel Spacing="16">
 										<StackPanel Orientation="Horizontal" Spacing="12">
-											<TextBlock Text="Airport:" FontSize="16" FontWeight="SemiBold"/>
+											<TextBlock Text="Airport:" FontSize="16" FontWeight="SemiBold" Foreground="{DynamicResource AppText}"/>
 											<TextBlock Classes="subheader"
 													  Text="{Binding WeatherSummary.AirportName}"
 													  VerticalAlignment="Center"/>
@@ -612,17 +634,16 @@
 									</StackPanel>
 								</Border>
 
+								<!-- Runway Analysis -->
 								<Border Background="{DynamicResource AppSurface2}"
-       CornerRadius="10"
-       Padding="20"
-       IsVisible="{Binding DepartureRunways.Count, Converter={StaticResource CountToBoolConverter}}">
+										CornerRadius="10"
+										Padding="20"
+										IsVisible="{Binding DepartureRunways.Count, Converter={StaticResource CountToBoolConverter}}">
 									<StackPanel Spacing="16">
-										<TextBlock Text="Runway Analysis"
-												  Classes="subheader"/>
+										<TextBlock Text="Runway Analysis" Classes="subheader"/>
 
 										<StackPanel Spacing="8">
-											<TextBlock Text="Select Runway"
-													  Classes="label"/>
+											<TextBlock Text="Select Runway" Classes="label"/>
 											<ComboBox ItemsSource="{Binding DepartureRunways}"
 													 SelectedItem="{Binding SelectedRunway}"
 													 HorizontalAlignment="Stretch"
@@ -632,7 +653,6 @@
 													 Padding="12"
 													 Height="44"/>
 
-											<!-- Show which runway was auto-selected -->
 											<TextBlock Text="{Binding AutoSelectedRunwayInfo}"
 													  FontSize="11"
 													  Foreground="{DynamicResource AppTextTertiary}"
@@ -641,7 +661,6 @@
 													  IsVisible="{Binding ShowAutoSelectedInfo}"/>
 										</StackPanel>
 
-										<!-- Runway Details -->
 										<Border Background="{DynamicResource AppSurface}"
 											   CornerRadius="8"
 											   Padding="16"
@@ -726,7 +745,7 @@
 												   Margin="0,8">
 												<StackPanel Spacing="8">
 													<StackPanel Orientation="Horizontal" Spacing="8">
-														<TextBlock Text="WARNING:" FontSize="16" FontWeight="Bold"/>
+														<TextBlock Text="&#x26A0;&#xFE0F; WARNING:" FontSize="16" FontWeight="Bold"/>
 														<TextBlock Text="{Binding Type}"
 																  FontWeight="SemiBold"
 																  FontSize="16"
@@ -746,13 +765,12 @@
 										</DataTemplate>
 									</ItemsControl.ItemTemplate>
 								</ItemsControl>
-								
+
 								<!-- Recommendations -->
 								<Border Background="{DynamicResource AppSurface2}" CornerRadius="10" Padding="20"
 									   IsVisible="{Binding CurrentDecision.Recommendations.Count, Converter={StaticResource CountToBoolConverter}}">
 									<StackPanel Spacing="12">
-										<TextBlock Text="Recommendations"
-												  Classes="subheader"/>
+										<TextBlock Text="Recommendations" Classes="subheader"/>
 										<ItemsControl ItemsSource="{Binding CurrentDecision.Recommendations}">
 											<ItemsControl.ItemTemplate>
 												<DataTemplate>
@@ -819,7 +837,7 @@
 								   Spacing="16"
 								   IsVisible="{Binding !ShowResults}"
 								   Opacity="0.5">
-							<TextBlock Text="[Airplane Icon]"
+							<TextBlock Text="&#x2708;&#xFE0F;"
 									  FontSize="64"
 									  HorizontalAlignment="Center"/>
 							<TextBlock Text="Enter flight details and check weather"
@@ -831,6 +849,8 @@
 				</Border>
 			</Grid>
 		</Grid>
+
+		<!-- Theme Toggle Button -->
 		<Canvas HorizontalAlignment="Right"
 				VerticalAlignment="Bottom"
 				Margin="0,0,40,40">
