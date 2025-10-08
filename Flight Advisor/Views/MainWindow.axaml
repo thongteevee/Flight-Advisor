@@ -469,6 +469,9 @@
 						
 =======
 
+<<<<<<< HEAD
+>>>>>>> parent of ade412b (attempt to add error display)
+=======
 >>>>>>> parent of ade412b (attempt to add error display)
 						<!-- Results Display -->
 						<ScrollViewer IsVisible="{Binding ShowResults}">
