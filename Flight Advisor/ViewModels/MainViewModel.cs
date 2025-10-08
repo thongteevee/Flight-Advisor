@@ -62,8 +62,6 @@ namespace FlightAdvisor.ViewModels
         private bool _showAutoSelectedInfo;
         private RunwayData _selectedRunwayData;
         private List<RunwayData> _cachedRunwayData = new List<RunwayData>();
-
-        // NEW: Airport switching properties
         private string _currentAirportType = "Departure";
         private bool _showArrivalButton;
         private bool _showAlternateButton;

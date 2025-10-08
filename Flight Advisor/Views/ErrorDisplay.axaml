@@ -1,0 +1,273 @@
+<?xml version="1.0" encoding="utf-8"?>
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:FlightAdvisor.ViewModels"
+             x:Class="FlightAdvisor.Views.ErrorDisplay"
+             x:DataType="vm:MainViewModel">
+
+	<UserControl.Styles>
+		<!-- Error Card Animation -->
+		<Style Selector="Border.error-card">
+			<Style.Animations>
+				<Animation Duration="0:0:0.4" FillMode="Forward">
+					<KeyFrame Cue="0%">
+						<Setter Property="Opacity" Value="0"/>
+						<Setter Property="ScaleTransform.ScaleX" Value="0.95"/>
+						<Setter Property="ScaleTransform.ScaleY" Value="0.95"/>
+					</KeyFrame>
+					<KeyFrame Cue="100%">
+						<Setter Property="Opacity" Value="1"/>
+						<Setter Property="ScaleTransform.ScaleX" Value="1"/>
+						<Setter Property="ScaleTransform.ScaleY" Value="1"/>
+					</KeyFrame>
+				</Animation>
+			</Style.Animations>
+		</Style>
+
+		<!-- Shake animation for severe errors -->
+		<Style Selector="Border.error-severe">
+			<Style.Animations>
+				<Animation Duration="0:0:0.5" FillMode="Forward">
+					<KeyFrame Cue="0%">
+						<Setter Property="TranslateTransform.X" Value="0"/>
+					</KeyFrame>
+					<KeyFrame Cue="10%">
+						<Setter Property="TranslateTransform.X" Value="-10"/>
+					</KeyFrame>
+					<KeyFrame Cue="20%">
+						<Setter Property="TranslateTransform.X" Value="10"/>
+					</KeyFrame>
+					<KeyFrame Cue="30%">
+						<Setter Property="TranslateTransform.X" Value="-10"/>
+					</KeyFrame>
+					<KeyFrame Cue="40%">
+						<Setter Property="TranslateTransform.X" Value="10"/>
+					</KeyFrame>
+					<KeyFrame Cue="50%">
+						<Setter Property="TranslateTransform.X" Value="0"/>
+					</KeyFrame>
+				</Animation>
+			</Style.Animations>
+		</Style>
+	</UserControl.Styles>
+
+	<Border Classes="error-card"
+	        Background="#1a1625"
+	        BorderBrush="#dc2626"
+	        BorderThickness="2"
+	        CornerRadius="16"
+	        Padding="32"
+	        BoxShadow="0 8 32 0 #00000060">
+
+		<Grid RowDefinitions="Auto,Auto,Auto,Auto,Auto">
+
+			<!-- Error Icon with Pulse Animation -->
+			<Viewbox Width="80" Height="80"
+			         Grid.Row="0"
+			         HorizontalAlignment="Center"
+			         Margin="0,0,0,24"
+			         Name="ErrorIcon">
+				<Viewbox.Styles>
+					<Style Selector="Viewbox#ErrorIcon">
+						<Style.Animations>
+							<Animation Duration="0:0:2" IterationCount="Infinite">
+								<KeyFrame Cue="0%">
+									<Setter Property="ScaleTransform.ScaleX" Value="1"/>
+									<Setter Property="ScaleTransform.ScaleY" Value="1"/>
+									<Setter Property="Opacity" Value="1"/>
+								</KeyFrame>
+								<KeyFrame Cue="50%">
+									<Setter Property="ScaleTransform.ScaleX" Value="1.1"/>
+									<Setter Property="ScaleTransform.ScaleY" Value="1.1"/>
+									<Setter Property="Opacity" Value="0.8"/>
+								</KeyFrame>
+								<KeyFrame Cue="100%">
+									<Setter Property="ScaleTransform.ScaleX" Value="1"/>
+									<Setter Property="ScaleTransform.ScaleY" Value="1"/>
+									<Setter Property="Opacity" Value="1"/>
+								</KeyFrame>
+							</Animation>
+						</Style.Animations>
+					</Style>
+				</Viewbox.Styles>
+
+				<Canvas Width="100" Height="100">
+					<!-- Circle Background -->
+					<Ellipse Width="100" Height="100"
+					         Fill="#dc2626"
+					         Opacity="0.2"/>
+
+					<!-- Warning Triangle -->
+					<Path Fill="#dc2626"
+					      Data="M50,25 L75,65 L25,65 Z"
+					      Stroke="#dc2626"
+					      StrokeThickness="3"/>
+
+					<!-- Exclamation Mark -->
+					<Rectangle Width="4" Height="18"
+					           Canvas.Left="48" Canvas.Top="38"
+					           Fill="White"
+					           RadiusX="2" RadiusY="2"/>
+					<Ellipse Width="5" Height="5"
+					         Canvas.Left="47.5" Canvas.Top="58"
+					         Fill="White"/>
+				</Canvas>
+			</Viewbox>
+
+			<!-- Error Title -->
+			<TextBlock Grid.Row="1"
+			           Text="Unable to Fetch Weather Data"
+			           FontSize="24"
+			           FontWeight="Bold"
+			           Foreground="#dc2626"
+			           HorizontalAlignment="Center"
+			           Margin="0,0,0,16"/>
+
+			<!-- Error Message -->
+			<Border Grid.Row="2"
+			        Background="#fee2e2"
+			        CornerRadius="8"
+			        Padding="16"
+			        Margin="0,0,0,20">
+				<TextBlock Text="{Binding ErrorMessage}"
+				           TextWrapping="Wrap"
+				           Foreground="#991b1b"
+				           FontSize="14"
+				           LineHeight="20"
+				           TextAlignment="Center"/>
+			</Border>
+
+			<!-- Helpful Suggestions -->
+			<Border Grid.Row="3"
+			        Background="#0f172a"
+			        BorderBrush="#334155"
+			        BorderThickness="1"
+			        CornerRadius="12"
+			        Padding="20"
+			        Margin="0,0,0,24">
+				<StackPanel Spacing="12">
+					<TextBlock Text="&#x1F4A1; Troubleshooting Tips"
+					           FontSize="16"
+					           FontWeight="SemiBold"
+					           Foreground="#e0e7ff"
+					           Margin="0,0,0,8"/>
+
+					<!-- Tip 1 -->
+					<StackPanel Orientation="Horizontal" Spacing="12">
+						<TextBlock Text="&#x2708;&#xFE0F;"
+						           FontSize="20"
+						           VerticalAlignment="Top"
+						           Margin="0,2,0,0"/>
+						<TextBlock TextWrapping="Wrap"
+						           Foreground="#c7d2fe"
+						           FontSize="13"
+						           LineHeight="18">
+							<Run FontWeight="SemiBold">Check ICAO Code:</Run>
+							<Run Text=" Ensure you're using the correct 4-letter ICAO code (e.g., KJFK, KSFO, KEWR)"/>
+						</TextBlock>
+					</StackPanel>
+
+					<!-- Tip 2 -->
+					<StackPanel Orientation="Horizontal" Spacing="12">
+						<TextBlock Text="&#x1F310;"
+						           FontSize="20"
+						           VerticalAlignment="Top"
+						           Margin="0,2,0,0"/>
+						<TextBlock TextWrapping="Wrap"
+						           Foreground="#c7d2fe"
+						           FontSize="13"
+						           LineHeight="18">
+							<Run FontWeight="SemiBold">Network Connection:</Run>
+							<Run Text=" Verify your internet connection is stable and active"/>
+						</TextBlock>
+					</StackPanel>
+
+					<!-- Tip 3 -->
+					<StackPanel Orientation="Horizontal" Spacing="12">
+						<TextBlock Text="&#x1F504;"
+						           FontSize="20"
+						           VerticalAlignment="Top"
+						           Margin="0,2,0,0"/>
+						<TextBlock TextWrapping="Wrap"
+						           Foreground="#c7d2fe"
+						           FontSize="13"
+						           LineHeight="18">
+							<Run FontWeight="SemiBold">API Status:</Run>
+							<Run Text=" The NOAA Aviation Weather service may be temporarily unavailable. Try again in a few moments"/>
+						</TextBlock>
+					</StackPanel>
+
+					<!-- Tip 4 -->
+					<StackPanel Orientation="Horizontal" Spacing="12">
+						<TextBlock Text="&#x1F4CD;"
+						           FontSize="20"
+						           VerticalAlignment="Top"
+						           Margin="0,2,0,0"/>
+						<TextBlock TextWrapping="Wrap"
+						           Foreground="#c7d2fe"
+						           FontSize="13"
+						           LineHeight="18">
+							<Run FontWeight="SemiBold">Small Airports:</Run>
+							<Run Text=" Some smaller airports may not report weather data. Try a nearby larger airport"/>
+						</TextBlock>
+					</StackPanel>
+				</StackPanel>
+			</Border>
+
+			<!-- Action Buttons -->
+			<StackPanel Grid.Row="4"
+			            Orientation="Horizontal"
+			            HorizontalAlignment="Center"
+			            Spacing="12">
+
+				<!-- Retry Button -->
+				<Button Command="{Binding RetryCommand}"
+				        Height="44"
+				        Padding="24,0"
+				        CornerRadius="8"
+				        FontWeight="SemiBold"
+				        FontSize="14"
+				        Background="#4f46e5"
+				        Foreground="White"
+				        Cursor="Hand">
+					<Button.Styles>
+						<Style Selector="Button:pointerover">
+							<Setter Property="Background" Value="#4338ca"/>
+						</Style>
+						<Style Selector="Button:pressed">
+							<Setter Property="Background" Value="#3730a3"/>
+						</Style>
+					</Button.Styles>
+					<StackPanel Orientation="Horizontal" Spacing="6">
+						<TextBlock Text="&#x1F504;" FontSize="16" VerticalAlignment="Center"/>
+						<TextBlock Text="Try Again" VerticalAlignment="Center"/>
+					</StackPanel>
+				</Button>
+
+				<!-- Clear Button -->
+				<Button Content="Clear"
+				        Command="{Binding ClearErrorCommand}"
+				        Height="44"
+				        Padding="24,0"
+				        CornerRadius="8"
+				        FontWeight="SemiBold"
+				        FontSize="14"
+				        Background="#1e293b"
+				        Foreground="#e0e7ff"
+				        BorderBrush="#334155"
+				        BorderThickness="1"
+				        Cursor="Hand">
+					<Button.Styles>
+						<Style Selector="Button:pointerover">
+							<Setter Property="Background" Value="#334155"/>
+						</Style>
+						<Style Selector="Button:pressed">
+							<Setter Property="Background" Value="#475569"/>
+						</Style>
+					</Button.Styles>
+				</Button>
+			</StackPanel>
+
+		</Grid>
+	</Border>
+</UserControl>
