@@ -613,11 +613,11 @@
 
 								<!-- Action Buttons -->
 								<StackPanel Grid.Row="4"
-											Orientation="Horizontal"
-											HorizontalAlignment="Center"
-											Spacing="12">
+            Orientation="Horizontal"
+            HorizontalAlignment="Center"
+            Spacing="12">
 
-									<Button Command="{Binding RetryCommand}"
+									<Button Click="RetryError_Click"
 											Height="44"
 											Padding="24,0"
 											CornerRadius="8"
@@ -638,7 +638,7 @@
 									</Button>
 
 									<Button Content="Clear"
-											Command="{Binding ClearErrorCommand}"
+											Click="ClearError_Click"
 											Height="44"
 											Padding="24,0"
 											CornerRadius="8"
@@ -656,7 +656,6 @@
 										</Button.Styles>
 									</Button>
 								</StackPanel>
-
 							</Grid>
 						</Border>
 

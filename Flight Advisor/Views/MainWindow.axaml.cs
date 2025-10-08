@@ -136,5 +136,21 @@ namespace FlightAdvisor.Views
                 await vm.SwitchToAirportAsync("Alternate");
             }
         }
+
+        private async void RetryError_Click(object sender, RoutedEventArgs e)
+        {
+            if (DataContext is MainViewModel vm)
+            {
+                vm.CheckWeatherCommand.Execute().Subscribe();
+            }
+        }
+
+        private async void ClearError_Click(object sender, RoutedEventArgs e)
+        {
+            if (DataContext is MainViewModel vm)
+            {
+                vm.ClearErrorCommand.Execute().Subscribe();
+            }
+        }
     }
 }

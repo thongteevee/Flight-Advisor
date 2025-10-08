@@ -216,20 +216,20 @@
 
 			<!-- Action Buttons -->
 			<StackPanel Grid.Row="4"
-			            Orientation="Horizontal"
-			            HorizontalAlignment="Center"
-			            Spacing="12">
+						Orientation="Horizontal"
+						HorizontalAlignment="Center"
+						Spacing="12">
 
 				<!-- Retry Button -->
-				<Button Command="{Binding RetryCommand}"
-				        Height="44"
-				        Padding="24,0"
-				        CornerRadius="8"
-				        FontWeight="SemiBold"
-				        FontSize="14"
-				        Background="#4f46e5"
-				        Foreground="White"
-				        Cursor="Hand">
+				<Button Click="RetryButton_Click"
+						Height="44"
+						Padding="24,0"
+						CornerRadius="8"
+						FontWeight="SemiBold"
+						FontSize="14"
+						Background="#4f46e5"
+						Foreground="White"
+						Cursor="Hand">
 					<Button.Styles>
 						<Style Selector="Button:pointerover">
 							<Setter Property="Background" Value="#4338ca"/>
@@ -246,17 +246,17 @@
 
 				<!-- Clear Button -->
 				<Button Content="Clear"
-				        Command="{Binding ClearErrorCommand}"
-				        Height="44"
-				        Padding="24,0"
-				        CornerRadius="8"
-				        FontWeight="SemiBold"
-				        FontSize="14"
-				        Background="#1e293b"
-				        Foreground="#e0e7ff"
-				        BorderBrush="#334155"
-				        BorderThickness="1"
-				        Cursor="Hand">
+						Click="ClearButton_Click"
+						Height="44"
+						Padding="24,0"
+						CornerRadius="8"
+						FontWeight="SemiBold"
+						FontSize="14"
+						Background="#1e293b"
+						Foreground="#e0e7ff"
+						BorderBrush="#334155"
+						BorderThickness="1"
+						Cursor="Hand">
 					<Button.Styles>
 						<Style Selector="Button:pointerover">
 							<Setter Property="Background" Value="#334155"/>
@@ -267,7 +267,6 @@
 					</Button.Styles>
 				</Button>
 			</StackPanel>
-
 		</Grid>
 	</Border>
 </UserControl>
