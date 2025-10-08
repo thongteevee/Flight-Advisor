@@ -466,7 +466,7 @@
 							</StackPanel>
 						</Border>-->
 
-						<!-- Enhanced Error Display with Unicode -->
+						<!-- Enhanced Error Display -->
 						<Border IsVisible="{Binding HasError}"
 								Background="#1a1625"
 								BorderBrush="#dc2626"
@@ -474,7 +474,8 @@
 								CornerRadius="16"
 								Padding="32"
 								BoxShadow="0 8 32 0 #00000060"
-								MaxWidth="600"
+								MaxWidth="700"
+								MaxHeight="800"
 								VerticalAlignment="Center"
 								HorizontalAlignment="Center">
 
@@ -540,14 +541,17 @@
 								<Border Grid.Row="2"
 										Background="#fee2e2"
 										CornerRadius="8"
-										Padding="16"
-										Margin="0,0,0,20">
-									<TextBlock Text="{Binding ErrorMessage}"
-											   TextWrapping="Wrap"
-											   Foreground="#991b1b"
-											   FontSize="14"
-											   LineHeight="20"
-											   TextAlignment="Center"/>
+										Padding="20"
+										Margin="0,0,0,20"
+										MaxHeight="200">
+									<ScrollViewer VerticalScrollBarVisibility="Auto">
+										<TextBlock Text="{Binding ErrorMessage}"
+												   TextWrapping="Wrap"
+												   Foreground="#991b1b"
+												   FontSize="13"
+												   LineHeight="20"
+												   TextAlignment="Left"/>
+									</ScrollViewer>
 								</Border>
 
 								<!-- Troubleshooting Tips -->
@@ -556,66 +560,63 @@
 										BorderBrush="{DynamicResource AppBorder}"
 										BorderThickness="1"
 										CornerRadius="12"
-										Padding="20"
-										Margin="0,0,0,24">
-									<StackPanel Spacing="12">
-										<TextBlock Text="&#x1F4A1; Troubleshooting Tips"
-												   FontSize="16"
-												   FontWeight="SemiBold"
-												   Foreground="{DynamicResource AppText}"
-												   Margin="0,0,0,8"/>
+										Padding="24"
+										Margin="0,0,0,24"
+										MaxHeight="300">
+									<ScrollViewer VerticalScrollBarVisibility="Auto">
+										<StackPanel Spacing="12">
+											<TextBlock Text="&#x1F4A1; Troubleshooting Tips"
+													   FontSize="16"
+													   FontWeight="SemiBold"
+													   Foreground="{DynamicResource AppText}"
+													   Margin="0,0,0,8"/>
 
-										<StackPanel Orientation="Horizontal" Spacing="12">
-											<TextBlock Text="&#x2708;&#xFE0F;" FontSize="20" VerticalAlignment="Top" Margin="0,2,0,0"/>
-											<TextBlock TextWrapping="Wrap"
-													   Foreground="{DynamicResource AppTextSecondary}"
-													   FontSize="13"
-													   LineHeight="18">
-												<Run FontWeight="SemiBold">Check ICAO Code:</Run>
-												<Run Text=" Ensure you're using the correct 4-letter ICAO code (e.g., KJFK, KSFO, KEWR)"/>
-											</TextBlock>
-										</StackPanel>
+											<StackPanel Spacing="10">
+												<TextBlock TextWrapping="Wrap"
+														   Foreground="{DynamicResource AppTextSecondary}"
+														   FontSize="13"
+														   LineHeight="20">
+													<Run Text="• " FontWeight="Bold"/>
+													<Run FontWeight="SemiBold">Check ICAO Code:</Run>
+													<Run Text=" Ensure you're using the correct 4-letter ICAO code (e.g., KJFK, KSFO, KEWR)"/>
+												</TextBlock>
 
-										<StackPanel Orientation="Horizontal" Spacing="12">
-											<TextBlock Text="&#x1F310;" FontSize="20" VerticalAlignment="Top" Margin="0,2,0,0"/>
-											<TextBlock TextWrapping="Wrap"
-													   Foreground="{DynamicResource AppTextSecondary}"
-													   FontSize="13"
-													   LineHeight="18">
-												<Run FontWeight="SemiBold">Network Connection:</Run>
-												<Run Text=" Verify your internet connection is stable and active"/>
-											</TextBlock>
-										</StackPanel>
+												<TextBlock TextWrapping="Wrap"
+														   Foreground="{DynamicResource AppTextSecondary}"
+														   FontSize="13"
+														   LineHeight="20">
+													<Run Text="• " FontWeight="Bold"/>
+													<Run FontWeight="SemiBold">Network Connection:</Run>
+													<Run Text=" Verify your internet connection is stable and active"/>
+												</TextBlock>
 
-										<StackPanel Orientation="Horizontal" Spacing="12">
-											<TextBlock Text="&#x1F504;" FontSize="20" VerticalAlignment="Top" Margin="0,2,0,0"/>
-											<TextBlock TextWrapping="Wrap"
-													   Foreground="{DynamicResource AppTextSecondary}"
-													   FontSize="13"
-													   LineHeight="18">
-												<Run FontWeight="SemiBold">API Status:</Run>
-												<Run Text=" The NOAA service may be temporarily unavailable. Try again in a few moments"/>
-											</TextBlock>
-										</StackPanel>
+												<TextBlock TextWrapping="Wrap"
+														   Foreground="{DynamicResource AppTextSecondary}"
+														   FontSize="13"
+														   LineHeight="20">
+													<Run Text="• " FontWeight="Bold"/>
+													<Run FontWeight="SemiBold">API Status:</Run>
+													<Run Text=" The NOAA service may be temporarily unavailable. Try again in a few moments"/>
+												</TextBlock>
 
-										<StackPanel Orientation="Horizontal" Spacing="12">
-											<TextBlock Text="&#x1F4CD;" FontSize="20" VerticalAlignment="Top" Margin="0,2,0,0"/>
-											<TextBlock TextWrapping="Wrap"
-													   Foreground="{DynamicResource AppTextSecondary}"
-													   FontSize="13"
-													   LineHeight="18">
-												<Run FontWeight="SemiBold">Small Airports:</Run>
-												<Run Text=" Some smaller airports may not report weather. Try a nearby larger airport"/>
-											</TextBlock>
+												<TextBlock TextWrapping="Wrap"
+														   Foreground="{DynamicResource AppTextSecondary}"
+														   FontSize="13"
+														   LineHeight="20">
+													<Run Text="• " FontWeight="Bold"/>
+													<Run FontWeight="SemiBold">Small Airports:</Run>
+													<Run Text=" Some smaller airports may not report weather. Try a nearby larger airport"/>
+												</TextBlock>
+											</StackPanel>
 										</StackPanel>
-									</StackPanel>
+									</ScrollViewer>
 								</Border>
 
 								<!-- Action Buttons -->
 								<StackPanel Grid.Row="4"
-            Orientation="Horizontal"
-            HorizontalAlignment="Center"
-            Spacing="12">
+											Orientation="Horizontal"
+											HorizontalAlignment="Center"
+											Spacing="12">
 
 									<Button Click="RetryError_Click"
 											Height="44"
@@ -629,6 +630,9 @@
 										<Button.Styles>
 											<Style Selector="Button:pointerover">
 												<Setter Property="Background" Value="#4338ca"/>
+											</Style>
+											<Style Selector="Button:pressed">
+												<Setter Property="Background" Value="#3730a3"/>
 											</Style>
 										</Button.Styles>
 										<StackPanel Orientation="Horizontal" Spacing="6">
@@ -656,6 +660,7 @@
 										</Button.Styles>
 									</Button>
 								</StackPanel>
+
 							</Grid>
 						</Border>
 
