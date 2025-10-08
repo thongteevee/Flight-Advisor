@@ -127,11 +127,10 @@ namespace FlightAdvisor.Services
                 }
             }
 
-            // 5. Check Density Altitude - FIXED: Proper null checking and calculation
+            // 5. Check Density Altitude
             if (metar.Temperature.HasValue && metar.Altimeter.HasValue && metar.Elevation.HasValue)
             {
-                // Ensure elevation is positive (field elevation above sea level)
-                var fieldElevation = Math.Abs(metar.Elevation.Value);
+                var fieldElevation = metar.Elevation.Value; // Remove Math.Abs()
 
                 var densityAltitude = _weatherService.CalculateDensityAltitude(
                     fieldElevation,
@@ -264,8 +263,7 @@ namespace FlightAdvisor.Services
 
         private WeatherSummary BuildWeatherSummary(MetarData metar, FlightInfo flightInfo)
         {
-            // Use Math.Abs to ensure elevation is positive, default to 0 if null
-            var fieldElevation = metar.Elevation.HasValue ? Math.Abs(metar.Elevation.Value) : 0;
+            var fieldElevation = metar.Elevation ?? 0;
 
             var summary = new WeatherSummary
             {
