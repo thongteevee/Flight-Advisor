@@ -48,7 +48,6 @@ namespace FlightAdvisor.ViewModels
         private FlightDecision _currentDecision;
         private WeatherSummary _weatherSummary;
         private bool _isLoading;
-        private string _errorMessage;
         private bool _showAdvancedMode;
         private bool _showResults;
         private string _lastUpdateTime;
@@ -65,6 +64,9 @@ namespace FlightAdvisor.ViewModels
         private string _currentAirportType = "Departure";
         private bool _showArrivalButton;
         private bool _showAlternateButton;
+        private bool _hasError;
+        private string _errorMessage;
+        private string _errorType;
 
         #endregion
 
@@ -112,6 +114,8 @@ namespace FlightAdvisor.ViewModels
 
             // Load aircraft database
             LoadAircraftDatabase();
+
+            InitializeErrorCommands();
         }
 
         #endregion
@@ -313,6 +317,18 @@ namespace FlightAdvisor.ViewModels
             set => this.RaiseAndSetIfChanged(ref _errorMessage, value);
         }
 
+        public bool HasError
+        {
+            get => _hasError;
+            set => this.RaiseAndSetIfChanged(ref _hasError, value);
+        }
+
+        public string ErrorType
+        {
+            get => _errorType;
+            set => this.RaiseAndSetIfChanged(ref _errorType, value);
+        }
+
         public bool ShowAdvancedMode
         {
             get => _showAdvancedMode;
@@ -358,7 +374,10 @@ namespace FlightAdvisor.ViewModels
         public ReactiveCommand<Unit, Unit> ToggleAdvancedModeCommand { get; }
         public ReactiveCommand<Unit, Unit> RefreshWeatherCommand { get; }
         public ReactiveCommand<Unit, Unit> ToggleThemeCommand { get; }
-        public ReactiveCommand<string, Unit> SwitchToAirportCommand { get; } // NEW
+        public ReactiveCommand<string, Unit> SwitchToAirportCommand { get; }
+        public ReactiveCommand<Unit, Unit> RetryCommand { get; set; }
+        public ReactiveCommand<Unit, Unit> ClearErrorCommand { get; set; }
+        public ReactiveCommand<string, Unit> QuickSelectAirportCommand { get; set; }
 
         #endregion
 
@@ -967,21 +986,78 @@ namespace FlightAdvisor.ViewModels
             return 0;
         }
 
+        private void InitializeErrorCommands()
+        {
+            RetryCommand = ReactiveCommand.CreateFromTask(async () =>
+            {
+                ClearError();
+                await CheckWeatherAsync();
+            });
+
+            ClearErrorCommand = ReactiveCommand.Create(() =>
+            {
+                ClearError();
+            });
+
+            QuickSelectAirportCommand = ReactiveCommand.CreateFromTask<string>(async (icaoCode) =>
+            {
+                if (string.IsNullOrEmpty(icaoCode))
+                    return;
+
+                DepartureIcao = icaoCode;
+                ClearError();
+                await Task.Delay(300);
+                await CheckWeatherAsync();
+            });
+        }
+
+        private void ClearError()
+        {
+            HasError = false;
+            ErrorMessage = string.Empty;
+            ErrorType = string.Empty;
+        }
+
         /// <summary>
         /// Main weather check operation - NOW FETCHES ALL AIRPORTS
         /// </summary>
         private async Task CheckWeatherAsync()
         {
+            if (string.IsNullOrWhiteSpace(DepartureIcao))
+            {
+                ShowFriendlyError(
+                    "Please enter a departure airport ICAO code (e.g., KJFK, KSFO)",
+                    "invalid_input"
+                );
+                return;
+            }
+
             IsLoading = true;
-            ErrorMessage = null;
-            ShowResults = false;
+            ClearError();
 
             try
             {
-                // Validate input
-                if (string.IsNullOrEmpty(DepartureIcao))
+                // Validate ICAO format
+                if (DepartureIcao.Length != 4)
                 {
-                    ErrorMessage = "Please enter a departure airport code.";
+                    throw new WeatherServiceException(
+                        $"Invalid ICAO code format: '{DepartureIcao}'. ICAO codes must be exactly 4 characters (e.g., KJFK)."
+                    );
+                }
+
+                // Fetch weather data
+                var metar = await _weatherService.GetMetarAsync(DepartureIcao.ToUpper());
+
+                if (metar == null)
+                {
+                    ShowFriendlyError(
+                        $"No weather data available for airport '{DepartureIcao.ToUpper()}'.\n\n" +
+                        $"This could mean:\n" +
+                        $"\u2022 The airport code doesn't exist in the NOAA database\n" +
+                        $"\u2022 The airport doesn't report METAR observations\n" +
+                        $"\u2022 The weather station is temporarily offline",
+                        "invalid_airport"
+                    );
                     return;
                 }
 
@@ -1064,14 +1140,100 @@ namespace FlightAdvisor.ViewModels
             {
                 ErrorMessage = ex.Message;
             }
+            catch (HttpRequestException ex)
+            {
+                ShowFriendlyError(
+                    $"Network connection error: Unable to reach the NOAA Aviation Weather service.\n\n" +
+                    $"Details: {ex.Message}\n\n" +
+                    $"Please check your internet connection and try again.",
+                    "network"
+                );
+            }
+            catch (TaskCanceledException)
+            {
+                ShowFriendlyError(
+                    "Request timed out: The weather service took too long to respond.\n\n" +
+                    "The NOAA servers may be experiencing high load. Please try again in a moment.",
+                    "timeout"
+                );
+            }
             catch (Exception ex)
             {
-                ErrorMessage = $"An unexpected error occurred: {ex.Message}";
+                ShowFriendlyError(
+                    $"An unexpected error occurred while fetching weather data.\n\n" +
+                    $"Error details: {ex.Message}\n\n" +
+                    $"Please try again or contact support if the issue persists.",
+                    "general"
+                );
+
+                System.Diagnostics.Debug.WriteLine($"Unexpected error: {ex}");
             }
             finally
             {
                 IsLoading = false;
             }
+        }
+
+        private void HandleWeatherServiceError(WeatherServiceException ex)
+        {
+            var message = ex.Message.ToLower();
+
+            if (message.Contains("network") || message.Contains("connection"))
+            {
+                ShowFriendlyError(
+                    $"Connection Error: {ex.Message}\n\n" +
+                    $"Unable to connect to the NOAA Aviation Weather service. " +
+                    $"Please check your internet connection.",
+                    "network"
+                );
+            }
+            else if (message.Contains("json") || message.Contains("parse") || message.Contains("format"))
+            {
+                ShowFriendlyError(
+                    $"Data Format Error: The weather service returned data in an unexpected format.\n\n" +
+                    $"This is usually temporary. Please try again in a moment.\n\n" +
+                    $"Technical details: {ex.Message}",
+                    "api_error"
+                );
+            }
+            else if (message.Contains("invalid") || message.Contains("not found"))
+            {
+                ShowFriendlyError(
+                    $"Airport Not Found: '{DepartureIcao.ToUpper()}' is not a valid ICAO airport code " +
+                    $"or does not report weather data.\n\n" +
+                    $"Please verify the airport code or try a nearby airport with weather reporting.",
+                    "invalid_airport"
+                );
+            }
+            else
+            {
+                ShowFriendlyError(
+                    $"Weather Service Error: {ex.Message}\n\n" +
+                    $"The aviation weather service encountered an issue. Please try again.",
+                    "api_error"
+                );
+            }
+        }
+
+        private void ShowFriendlyError(string message, string errorType = "general")
+        {
+            HasError = true;
+            ErrorMessage = message;
+            ErrorType = errorType;
+            ShowResults = false;
+
+            System.Diagnostics.Debug.WriteLine($"[{errorType.ToUpper()}] {message}");
+        }
+
+        private string GetAirportSuggestions()
+        {
+            return "\n\nPopular airports to try:\n" +
+                   "\u2022 KJFK - New York JFK\n" +
+                   "\u2022 KSFO - San Francisco\n" +
+                   "\u2022 KLAX - Los Angeles\n" +
+                   "\u2022 KORD - Chicago O'Hare\n" +
+                   "\u2022 KATL - Atlanta\n" +
+                   "\u2022 KDFW - Dallas/Fort Worth";
         }
 
         /// <summary>
