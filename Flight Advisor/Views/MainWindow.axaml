@@ -576,7 +576,7 @@
 														   Foreground="{DynamicResource AppTextSecondary}"
 														   FontSize="13"
 														   LineHeight="20">
-													<Run Text="• " FontWeight="Bold"/>
+													<Run Text="" FontWeight="Bold"/>
 													<Run FontWeight="SemiBold">Check ICAO Code:</Run>
 													<Run Text=" Ensure you're using the correct 4-letter ICAO code (e.g., KJFK, KSFO, KEWR)"/>
 												</TextBlock>
@@ -585,7 +585,7 @@
 														   Foreground="{DynamicResource AppTextSecondary}"
 														   FontSize="13"
 														   LineHeight="20">
-													<Run Text="• " FontWeight="Bold"/>
+													<Run Text="" FontWeight="Bold"/>
 													<Run FontWeight="SemiBold">Network Connection:</Run>
 													<Run Text=" Verify your internet connection is stable and active"/>
 												</TextBlock>
@@ -594,7 +594,7 @@
 														   Foreground="{DynamicResource AppTextSecondary}"
 														   FontSize="13"
 														   LineHeight="20">
-													<Run Text="• " FontWeight="Bold"/>
+													<Run Text="" FontWeight="Bold"/>
 													<Run FontWeight="SemiBold">API Status:</Run>
 													<Run Text=" The NOAA service may be temporarily unavailable. Try again in a few moments"/>
 												</TextBlock>
@@ -603,7 +603,7 @@
 														   Foreground="{DynamicResource AppTextSecondary}"
 														   FontSize="13"
 														   LineHeight="20">
-													<Run Text="• " FontWeight="Bold"/>
+													<Run Text="" FontWeight="Bold"/>
 													<Run FontWeight="SemiBold">Small Airports:</Run>
 													<Run Text=" Some smaller airports may not report weather. Try a nearby larger airport"/>
 												</TextBlock>
