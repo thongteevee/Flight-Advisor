@@ -1138,7 +1138,7 @@ namespace FlightAdvisor.ViewModels
             }
             catch (WeatherServiceException ex)
             {
-                ErrorMessage = ex.Message;
+                HandleWeatherServiceError(ex);
             }
             catch (HttpRequestException ex)
             {
