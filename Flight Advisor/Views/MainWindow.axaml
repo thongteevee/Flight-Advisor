@@ -641,7 +641,172 @@
 
 							</Grid>
 						</Border>
-						
+
+						<!-- PopularAirportsHelper.axaml - UserControl with Unicode -->
+						<UserControl xmlns="https://github.com/avaloniaui"
+									 xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+									 x:Class="FlightAdvisor.Views.PopularAirportsHelper">
+
+							<Border Background="{DynamicResource AppSurface2}"
+									BorderBrush="{DynamicResource AppBorder}"
+									BorderThickness="1"
+									CornerRadius="12"
+									Padding="20">
+
+								<StackPanel Spacing="16">
+									<TextBlock Text="&#x1F5FA;&#xFE0F; Try These Popular Airports"
+											   FontSize="16"
+											   FontWeight="SemiBold"
+											   Foreground="{DynamicResource AppText}"/>
+
+									<Grid ColumnDefinitions="*,*" RowDefinitions="Auto,Auto,Auto" ColumnSpacing="12" RowSpacing="8">
+
+										<!-- Row 1 -->
+										<Button Grid.Row="0" Grid.Column="0"
+												Content="KJFK - New York JFK"
+												Command="{Binding QuickSelectAirportCommand}"
+												CommandParameter="KJFK"
+												HorizontalAlignment="Stretch"
+												HorizontalContentAlignment="Left"
+												Height="40"
+												Padding="12"
+												Background="{DynamicResource AppSurface}"
+												Foreground="{DynamicResource AppText}"
+												BorderBrush="{DynamicResource AppBorder}"
+												BorderThickness="1"
+												CornerRadius="6"
+												Cursor="Hand">
+											<Button.Styles>
+												<Style Selector="Button:pointerover">
+													<Setter Property="Background" Value="#4f46e5"/>
+													<Setter Property="Foreground" Value="White"/>
+												</Style>
+											</Button.Styles>
+										</Button>
+
+										<Button Grid.Row="0" Grid.Column="1"
+												Content="KSFO - San Francisco"
+												Command="{Binding QuickSelectAirportCommand}"
+												CommandParameter="KSFO"
+												HorizontalAlignment="Stretch"
+												HorizontalContentAlignment="Left"
+												Height="40"
+												Padding="12"
+												Background="{DynamicResource AppSurface}"
+												Foreground="{DynamicResource AppText}"
+												BorderBrush="{DynamicResource AppBorder}"
+												BorderThickness="1"
+												CornerRadius="6"
+												Cursor="Hand">
+											<Button.Styles>
+												<Style Selector="Button:pointerover">
+													<Setter Property="Background" Value="#4f46e5"/>
+													<Setter Property="Foreground" Value="White"/>
+												</Style>
+											</Button.Styles>
+										</Button>
+
+										<!-- Row 2 -->
+										<Button Grid.Row="1" Grid.Column="0"
+												Content="KLAX - Los Angeles"
+												Command="{Binding QuickSelectAirportCommand}"
+												CommandParameter="KLAX"
+												HorizontalAlignment="Stretch"
+												HorizontalContentAlignment="Left"
+												Height="40"
+												Padding="12"
+												Background="{DynamicResource AppSurface}"
+												Foreground="{DynamicResource AppText}"
+												BorderBrush="{DynamicResource AppBorder}"
+												BorderThickness="1"
+												CornerRadius="6"
+												Cursor="Hand">
+											<Button.Styles>
+												<Style Selector="Button:pointerover">
+													<Setter Property="Background" Value="#4f46e5"/>
+													<Setter Property="Foreground" Value="White"/>
+												</Style>
+											</Button.Styles>
+										</Button>
+
+										<Button Grid.Row="1" Grid.Column="1"
+												Content="KORD - Chicago O'Hare"
+												Command="{Binding QuickSelectAirportCommand}"
+												CommandParameter="KORD"
+												HorizontalAlignment="Stretch"
+												HorizontalContentAlignment="Left"
+												Height="40"
+												Padding="12"
+												Background="{DynamicResource AppSurface}"
+												Foreground="{DynamicResource AppText}"
+												BorderBrush="{DynamicResource AppBorder}"
+												BorderThickness="1"
+												CornerRadius="6"
+												Cursor="Hand">
+											<Button.Styles>
+												<Style Selector="Button:pointerover">
+													<Setter Property="Background" Value="#4f46e5"/>
+													<Setter Property="Foreground" Value="White"/>
+												</Style>
+											</Button.Styles>
+										</Button>
+
+										<!-- Row 3 -->
+										<Button Grid.Row="2" Grid.Column="0"
+												Content="KATL - Atlanta"
+												Command="{Binding QuickSelectAirportCommand}"
+												CommandParameter="KATL"
+												HorizontalAlignment="Stretch"
+												HorizontalContentAlignment="Left"
+												Height="40"
+												Padding="12"
+												Background="{DynamicResource AppSurface}"
+												Foreground="{DynamicResource AppText}"
+												BorderBrush="{DynamicResource AppBorder}"
+												BorderThickness="1"
+												CornerRadius="6"
+												Cursor="Hand">
+											<Button.Styles>
+												<Style Selector="Button:pointerover">
+													<Setter Property="Background" Value="#4f46e5"/>
+													<Setter Property="Foreground" Value="White"/>
+												</Style>
+											</Button.Styles>
+										</Button>
+
+										<Button Grid.Row="2" Grid.Column="1"
+												Content="KDFW - Dallas/Fort Worth"
+												Command="{Binding QuickSelectAirportCommand}"
+												CommandParameter="KDFW"
+												HorizontalAlignment="Stretch"
+												HorizontalContentAlignment="Left"
+												Height="40"
+												Padding="12"
+												Background="{DynamicResource AppSurface}"
+												Foreground="{DynamicResource AppText}"
+												BorderBrush="{DynamicResource AppBorder}"
+												BorderThickness="1"
+												CornerRadius="6"
+												Cursor="Hand">
+											<Button.Styles>
+												<Style Selector="Button:pointerover">
+													<Setter Property="Background" Value="#4f46e5"/>
+													<Setter Property="Foreground" Value="White"/>
+												</Style>
+											</Button.Styles>
+										</Button>
+
+									</Grid>
+
+									<TextBlock Text="Click any airport to automatically fetch its weather"
+											   FontSize="11"
+											   Foreground="{DynamicResource AppTextQuaternary}"
+											   HorizontalAlignment="Center"
+											   FontStyle="Italic"/>
+								</StackPanel>
+							</Border>
+						</UserControl>
+
 						<!-- Results Display -->
 						<ScrollViewer IsVisible="{Binding ShowResults}">
 							<StackPanel Spacing="24">

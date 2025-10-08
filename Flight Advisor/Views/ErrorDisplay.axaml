@@ -1,9 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:vm="using:FlightAdvisor.ViewModels"
-             x:Class="FlightAdvisor.Views.ErrorDisplay"
-             x:DataType="vm:MainViewModel">
+             x:Class="FlightAdvisor.Views.ErrorDisplay">
 
 	<UserControl.Styles>
 		<!-- Error Card Animation -->
