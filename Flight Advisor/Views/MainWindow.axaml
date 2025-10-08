@@ -1035,17 +1035,24 @@
 
 						<!-- Empty State -->
 						<StackPanel HorizontalAlignment="Center"
-								   VerticalAlignment="Center"
-								   Spacing="16"
-								   IsVisible="{Binding !ShowResults}"
-								   Opacity="0.5">
+									VerticalAlignment="Center"
+									Spacing="16"
+									Opacity="0.5">
+							<StackPanel.IsVisible>
+								<MultiBinding Converter="{x:Static BoolConverters.And}">
+									<Binding Path="!IsLoading"/>
+									<Binding Path="!ShowResults"/>
+									<Binding Path="!HasError"/>
+								</MultiBinding>
+							</StackPanel.IsVisible>
+
 							<TextBlock Text="&#x2708;&#xFE0F;"
-									  FontSize="64"
-									  HorizontalAlignment="Center"/>
+									   FontSize="64"
+									   HorizontalAlignment="Center"/>
 							<TextBlock Text="Enter flight details and check weather"
-									  Classes="subheader"
-									  HorizontalAlignment="Center"
-									  Opacity="0.7"/>
+									   Classes="subheader"
+									   HorizontalAlignment="Center"
+									   Opacity="0.7"/>
 						</StackPanel>
 					</Grid>
 				</Border>
