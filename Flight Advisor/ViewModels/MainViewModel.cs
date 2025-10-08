@@ -382,6 +382,21 @@ namespace FlightAdvisor.ViewModels
         #endregion
 
         #region Private Methods
+        private async Task QuickSelectAirportAsync(string icaoCode)
+        {
+            if (string.IsNullOrEmpty(icaoCode))
+                return;
+
+            // Set the departure ICAO
+            DepartureIcao = icaoCode;
+
+            // Clear any previous errors
+            ClearError();
+
+            // Automatically fetch weather
+            await Task.Delay(300); // Small delay for UI feedback
+            await CheckWeatherAsync();
+        }
 
         /// <summary>
         /// Load aircraft database from JSON file
@@ -1222,6 +1237,37 @@ namespace FlightAdvisor.ViewModels
             ErrorType = errorType;
             ShowResults = false;
 
+            System.Diagnostics.Debug.WriteLine($"[{errorType.ToUpper()}] {message}");
+        }
+
+        private void ShowFriendlyErrorWithSuggestions(string message, string errorType = "general")
+        {
+            HasError = true;
+            ErrorType = errorType;
+
+            // Add helpful suggestions based on error type
+            var suggestions = errorType switch
+            {
+                "invalid_airport" => "\n\nNot sure which airport to use? Try one of these popular airports:\n" +
+                                     "• KJFK - New York JFK International\n" +
+                                     "• KSFO - San Francisco International\n" +
+                                     "• KLAX - Los Angeles International\n" +
+                                     "• KORD - Chicago O'Hare\n" +
+                                     "• KATL - Hartsfield-Jackson Atlanta\n" +
+                                     "• KDFW - Dallas/Fort Worth International",
+
+                "network" => "\n\nTroubleshooting network issues:\n" +
+                            "• Check your internet connection\n" +
+                            "• Verify your firewall isn't blocking the app\n" +
+                            "• Try disabling VPN if you're using one\n" +
+                            "• Wait a moment and try again",
+
+                _ => ""
+            };
+
+            ErrorMessage = message + suggestions;
+
+            // Log for debugging
             System.Diagnostics.Debug.WriteLine($"[{errorType.ToUpper()}] {message}");
         }
 
