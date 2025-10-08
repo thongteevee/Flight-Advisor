@@ -1,11 +1,12 @@
 // Views/MainWindow.axaml.cs
+using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Notifications;
+using Avalonia.Interactivity;
+using Avalonia.Markup.Xaml;
 using FlightAdvisor.ViewModels;
 using System;
 using System.Reactive.Linq;
-using Avalonia.Interactivity;
-using Avalonia;
 
 namespace FlightAdvisor.Views
 {
@@ -39,6 +40,11 @@ namespace FlightAdvisor.Views
             }
         }
 
+        private void InitializeComponent()
+        {
+            AvaloniaXamlLoader.Load(this);
+        }
+
         private void ShowWeatherUpdateNotification()
         {
             _notificationManager?.Show(new Notification(
@@ -51,35 +57,35 @@ namespace FlightAdvisor.Views
 
         private void FlightLesson_Click(object sender, RoutedEventArgs e)
         {
-            if (DataContext is FlightAdvisor.ViewModels.MainViewModel vm)
+            if (DataContext is MainViewModel vm)
                 vm.SelectFlightTypeCommand.Execute("Flight Lesson");
         }
 
         private void Gliding_Click(object sender, RoutedEventArgs e)
         {
-            if (DataContext is FlightAdvisor.ViewModels.MainViewModel vm)
+            if (DataContext is MainViewModel vm)
                 vm.SelectFlightTypeCommand.Execute("Gliding");
         }
 
         private void Recreational_Click(object sender, RoutedEventArgs e)
         {
-            if (DataContext is FlightAdvisor.ViewModels.MainViewModel vm)
+            if (DataContext is MainViewModel vm)
                 vm.SelectFlightTypeCommand.Execute("Recreational Flight");
         }
 
         private void Discovery_Click(object sender, RoutedEventArgs e)
         {
-            if (DataContext is FlightAdvisor.ViewModels.MainViewModel vm)
+            if (DataContext is MainViewModel vm)
                 vm.SelectFlightTypeCommand.Execute("Discovery Flight");
         }
 
         private void JustLooking_Click(object sender, RoutedEventArgs e)
         {
-            if (DataContext is FlightAdvisor.ViewModels.MainViewModel vm)
+            if (DataContext is MainViewModel vm)
                 vm.SelectFlightTypeCommand.Execute("Just Looking at Weather");
         }
 
-        private async void CheckWeather_Click(object sender, Avalonia.Interactivity.RoutedEventArgs e)
+        private async void CheckWeather_Click(object sender, RoutedEventArgs e)
         {
             if (DataContext is MainViewModel vm)
             {
@@ -87,19 +93,19 @@ namespace FlightAdvisor.Views
             }
         }
 
-        private void ToggleAdvanced_Click(object sender, Avalonia.Interactivity.RoutedEventArgs e)
+        private void ToggleAdvanced_Click(object sender, RoutedEventArgs e)
         {
             if (DataContext is MainViewModel vm)
                 vm.ShowAdvancedMode = !vm.ShowAdvancedMode;
         }
 
-        private void ToggleFlightDetails_Click(object sender, Avalonia.Interactivity.RoutedEventArgs e)
+        private void ToggleFlightDetails_Click(object sender, RoutedEventArgs e)
         {
             if (DataContext is MainViewModel vm)
                 vm.ShowFlightDetails = !vm.ShowFlightDetails;
         }
 
-        private void ToggleTheme_Click(object sender, Avalonia.Interactivity.RoutedEventArgs e)
+        private void ToggleTheme_Click(object sender, RoutedEventArgs e)
         {
             // Toggle the theme on THIS WINDOW, not the App
             var currentTheme = this.RequestedThemeVariant;
@@ -113,7 +119,7 @@ namespace FlightAdvisor.Views
             }
         }
 
-        private async void SwitchToDeparture_Click(object sender, Avalonia.Interactivity.RoutedEventArgs e)
+        private async void SwitchToDeparture_Click(object sender, RoutedEventArgs e)
         {
             if (DataContext is MainViewModel vm)
             {
@@ -121,7 +127,7 @@ namespace FlightAdvisor.Views
             }
         }
 
-        private async void SwitchToArrival_Click(object sender, Avalonia.Interactivity.RoutedEventArgs e)
+        private async void SwitchToArrival_Click(object sender, RoutedEventArgs e)
         {
             if (DataContext is MainViewModel vm)
             {
@@ -129,7 +135,7 @@ namespace FlightAdvisor.Views
             }
         }
 
-        private async void SwitchToAlternate_Click(object sender, Avalonia.Interactivity.RoutedEventArgs e)
+        private async void SwitchToAlternate_Click(object sender, RoutedEventArgs e)
         {
             if (DataContext is MainViewModel vm)
             {

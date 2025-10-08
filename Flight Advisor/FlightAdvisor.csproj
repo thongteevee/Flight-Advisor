@@ -50,6 +50,9 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Compile Update="Views\ErrorDisplay.axaml.cs">
+      <DependentUpon>ErrorDisplay.axaml</DependentUpon>
+    </Compile>
     <Compile Update="Views\SplashScreen.axaml.cs">
       <DependentUpon>SplashScreen.axaml</DependentUpon>
     </Compile>
